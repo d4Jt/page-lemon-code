@@ -17,6 +17,8 @@ app.use(express.urlencoded({ extended: true }));
 require('./v1/configs/init.mongodb');
 // require('./v1/helpers/check.connect').checkOverLoad();
 
+require('./v1/middlewares/passport');
+
 // init routes
 require('./v1/routes/index.route')(app);
 
