@@ -13,11 +13,8 @@ router.get('/google/callback', authController.handleGoogleCallback, authControll
 router.get('/github', authController.authenticateWithGitHub);
 
 // Route to handle GitHub callback
-router.get('/github/callback', authController.handleGitHubCallback,(req, res) => {
-    res.json(req.user);
-});
+router.get('/github/callback', authController.handleGitHubCallback, authController.createUserPassport);
 
 router.post('/register', authController.register);
-
 
 module.exports = router;

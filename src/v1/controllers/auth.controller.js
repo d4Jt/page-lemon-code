@@ -8,7 +8,6 @@ const { findOneOrCreatePassport } = require('../models/repositories/user.reposit
 
 const handleGoogleCallback = (req, res, next) => {
    passport.authenticate('google', (err, profile) => {
-      console.log(profile);
       req.user = profile;
       return next();
    })(req, res, next);

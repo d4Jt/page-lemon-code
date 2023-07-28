@@ -1,6 +1,8 @@
 'use strict';
 const _ = require('lodash');
 const { Types, Schema } = require('mongoose');
+const bcrypt = require('bcryptjs');
+
 
 const getInfoData = ({ fields = [], object = {} }) => {
    return _.pick(object, fields);
@@ -61,6 +63,10 @@ const updateNestedObjectParser = (obj) => {
 
 const convertToObjectIdMongo = (id) => new Types.ObjectId(id);
 
+
+const hashPassword = password => bcrypt.hashSync(password, bcrypt.genSaltSync(10));
+const confirmPassword = (password, hashPassword) => bcrypt.compareSync(password, hashPassword);
+
 module.exports = {
    Headers: {
       API_KEY: 'x-api-key',
@@ -74,4 +80,6 @@ module.exports = {
    removeUndefinedObject,
    updateNestedObjectParser,
    convertToObjectIdMongo,
+   hashPassword,
+   confirmPassword,
 };

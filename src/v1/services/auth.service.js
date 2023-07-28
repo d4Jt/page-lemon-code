@@ -5,6 +5,7 @@ const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const GitHubStrategy = require('passport-github2').Strategy;
 const userModel = require('../models/user.model');
+const {hashPassword, confirmPassword} = require('../utils');
 // const {findOneOrCreatePassport} = require('../models/repositories/user.repositories');
 // require('dotenv').config();
 
@@ -34,11 +35,13 @@ passport.use(
     {
       clientID: process.env.GITHUB_CLIENT_ID,
       clientSecret: process.env.GITHUB_CLIENT_SECRET,
-      callbackURL: `http://localhost:${process.env.PORT}/api/auth/github/callback`, // Example: 'http://localhost:3000/auth/github/callback'
+      callbackURL: `http://localhost:${process.env.PORT}/api/auth/github/callback`,
+      scope: ['user:email'] // Example: 'http://localhost:3000/auth/github/callback'
     },
     (accessToken, refreshToken, profile, done) => {
       // Custom authentication logic if needed
       // For this example, we will just pass the profile to the next step
+      const email = profile.emails ? profile.emails[0].value : null;
 
       return done(null, profile);
     }
@@ -47,21 +50,30 @@ passport.use(
 
 const authenticateWithGitHub = passport.authenticate('github', { scope: ['user:email'] });
 
-const  register = (user) => new Promise(async (resolve, reject) => {
+const  register = ({email,password,confirmPassword,...body}) => new Promise(async (resolve, reject) => {
   try {
-
-      const findOneUser = await userModel.findOne({firstName: user.firstName, lastName: user.lastName})
+      
+      const findOneUser = await userModel.findOne({email})
       if(findOneUser) resolve({
           err: 0,
-          msg: "User already registered"
+          message: "User already registered"
       })
 
-      const newUser = new userModel(user)
-      await newUser.save();
+      if(password !== confirmPassword) resolve({
+        err: 1,
+        message: "Wrong password!"
+      })
+
+      const data = new userModel({
+        email: email,
+        password: hashPassword(password),
+        ...body
+      })
+      await data.save();
       resolve({
-          err: newUser ? 0 : 1,
-          msg: newUser ? 'Registration successful' : 'Registration',
-          newUser,
+          err: data ? 0 : 1,
+          message: data ? 'Registration successful' : 'Registration',
+          data,
       })
       
   } catch (error) {
