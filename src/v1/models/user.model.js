@@ -13,6 +13,9 @@ const userSchema = new Schema(
          type: String,
          required: true,
       },
+      avatar: {
+         type: String,
+      },
       email: {
          type: String,
          required: true,
@@ -20,16 +23,16 @@ const userSchema = new Schema(
       },
       msisdn: {
          type: String,
-         required: true,
          unique: true,
+         required: true,
       },
       password: {
          type: String,
-         required: true,
       },
       role: {
          type: String,
          enum: ['user', 'admin'],
+         default: 'user',
       },
       posts: [
          {
