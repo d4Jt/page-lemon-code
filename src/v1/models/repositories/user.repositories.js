@@ -1,17 +1,35 @@
 const User = require('../user.model');
 
-const findOneOrCreatePassport = async({id,displayName,photos,email,...user}) => new Promise(async (resolve, reject) =>{
-    const userModel = await User.findOne({_id: id});
-    if(userModel) 
-    resolve({
-        err: 1,
-        msg: "User already exists"
-    }) 
-    const newUser = new User({_id: id, firstName: displayName, avatar: photos[0].value,email: email})
-    await newUser.save();
-    resolve(newUser);
-}) ;
+const findOneOrCreatePassport = async (user) => {
+   const foundUser = await findOneUser(user.emails[0].value);
+   if (!foundUser) {
+      const newUser = await createNewUser({
+         firstName: user.name.givenName ? user.name.givenName : '',
+         lastName: user.name.familyName
+            ? user.name.familyName
+            : user.displayName,
+         avatar: user.photos[0].value,
+         email: user.emails[0].value,
+         msisdn: '',
+      });
+      return newUser;
+   }
+   return foundUser;
+};
+
+const findOneUser = async (email) => await User.findOne({ email }).lean();
+
+const createNewUser = async ({ firstName, lastName, image, email, msisdn }) =>
+   await User.create({
+      firstName,
+      lastName,
+      avatar: image,
+      email,
+      msisdn,
+   });
 
 module.exports = {
-    findOneOrCreatePassport,
-}
+   createNewUser,
+   findOneOrCreatePassport,
+   findOneUser,
+};

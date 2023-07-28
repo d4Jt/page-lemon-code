@@ -24,7 +24,6 @@ const userSchema = new Schema(
       msisdn: {
          type: String,
          unique: true,
-         required: true,
       },
       password: {
          type: String,
