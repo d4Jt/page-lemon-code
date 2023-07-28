@@ -1,22 +1,23 @@
 'use strict';
 const router = require('express').Router();
-const authenticationController = require('../controllers/auth.controller');
+const authController = require('../controllers/auth.controller');
+// const { create } = require('../models/comment.model');
 
-router.get('/google', authenticationController.authenticateWithGoogle);
+router.get('/google', authController.authenticateWithGoogle);
 
 // Route to handle Google callback
-router.get('/google/callback', authenticationController.handleGoogleCallback, (req, res) => {
-    res.json(req.user);
-});
+router.get('/google/callback', authController.handleGoogleCallback, authController.createUserPassport);
 
 // routes.js
 // Route to initiate GitHub OAuth
-router.get('/github', authenticationController.authenticateWithGitHub);
+router.get('/github', authController.authenticateWithGitHub);
 
 // Route to handle GitHub callback
-router.get('/github/callback', authenticationController.handleGitHubCallback,(req, res) => {
+router.get('/github/callback', authController.handleGitHubCallback,(req, res) => {
     res.json(req.user);
 });
+
+router.post('/register', authController.register);
 
 
 module.exports = router;
