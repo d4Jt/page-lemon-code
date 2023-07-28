@@ -22,7 +22,6 @@ class Database {
          .then((_) => {
             console.log('Database connection successful');
          })
-         .then(() => countConnect())
          .catch((err) => {
             console.log(`Error connecting database: ${err}`);
          });
