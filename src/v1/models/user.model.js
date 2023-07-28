@@ -23,7 +23,7 @@ const userSchema = new Schema(
       },
       msisdn: {
          type: String,
-         unique: true,
+         default: '6239479',
       },
       password: {
          type: String,
