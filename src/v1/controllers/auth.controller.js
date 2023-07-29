@@ -31,6 +31,13 @@ const register = async (req, res) => {
    res.json(user);
 };
 
+const login = async (req, res) => {
+   const {email, password} = req.body;
+   const user = await authenticationService.login({email, password});
+   res.json(user);
+};
+
+
 module.exports = {
    handleGoogleCallback,
    handleGitHubCallback,
@@ -38,4 +45,5 @@ module.exports = {
    authenticateWithGitHub: authenticationService.authenticateWithGitHub,
    createUserPassport,
    register,
+   login,
 };

@@ -1,4 +1,5 @@
 const User = require('../user.model');
+const {createToken} = require('../../utils');
 
 const findOneOrCreatePassport = async (user) => {
    const foundUser = await findOneUser(user.emails[0]?.value);
@@ -24,9 +25,37 @@ const findOneOrCreatePassport = async (user) => {
             msisdn: '',
          });
       }
-      return newUser;
+
+      
+      const accessToken = createToken(newUser, '5s');
+      const refreshToken = createToken(newUser, '120s');
+
+      if(refreshToken){
+         await User.updateOne({email: newUser.email }, {refreshToken})
+      }
+
+      return {
+         err: 0,
+         message: 'Registered is successful',
+         newUser,
+         'access_token': `Bearer ${accessToken}`,
+         'refresh_token': `Bearer ${refreshToken}`, 
+      };
    }
-   return foundUser;
+
+   const accessToken = createToken(foundUser, '5s');
+   const refreshToken = createToken(foundUser, '120s');
+
+      if(refreshToken){
+         await User.updateOne({email: foundUser.email }, {refreshToken})
+      }
+   return {
+      err: 0,
+      message: 'Login is successful',
+      foundUser,
+      'access_token': `Bearer ${accessToken}`,
+      'refresh_token': `Bearer ${refreshToken}`, 
+   };
 };
 
 const findOneUser = async (email) => await User.findOne({ email }).lean();

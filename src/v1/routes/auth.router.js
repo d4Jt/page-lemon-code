@@ -17,4 +17,6 @@ router.get('/github/callback', authController.handleGitHubCallback, authControll
 
 router.post('/register', authController.register);
 
+router.post('/login', authController.login);
+
 module.exports = router;

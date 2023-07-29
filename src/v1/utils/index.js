@@ -2,6 +2,9 @@
 const _ = require('lodash');
 const { Types, Schema } = require('mongoose');
 const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+require('dotenv').config();
+
 
 
 const getInfoData = ({ fields = [], object = {} }) => {
@@ -63,9 +66,20 @@ const updateNestedObjectParser = (obj) => {
 
 const convertToObjectIdMongo = (id) => new Types.ObjectId(id);
 
-
+// hash passwords
 const hashPassword = password => bcrypt.hashSync(password, bcrypt.genSaltSync(10));
 const confirmPassword = (password, hashPassword) => bcrypt.compareSync(password, hashPassword);
+
+// jsonwebtoken
+const createToken = ({...data}, options) =>{
+   return jwt.sign(data, process.env.JWT_SECRET_TOKEN, {
+      expiresIn: options
+   })
+}
+
+const verifyToken = (token) => {
+   return jwt.verify(token, process.env.JWT_SECRET_TOKEN)
+}
 
 module.exports = {
    Headers: {
@@ -82,4 +96,6 @@ module.exports = {
    convertToObjectIdMongo,
    hashPassword,
    confirmPassword,
+   createToken,
+   verifyToken,
 };

@@ -5,7 +5,7 @@ const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const GitHubStrategy = require('passport-github2').Strategy;
 const userModel = require('../models/user.model');
-const {hashPassword, confirmPassword} = require('../utils');
+const {hashPassword, confirmPassword, createToken} = require('../utils');
 // const {findOneOrCreatePassport} = require('../models/repositories/user.repositories');
 // require('dotenv').config();
 
@@ -70,20 +70,65 @@ const  register = ({email,password,confirmPassword,...body}) => new Promise(asyn
         ...body
       })
       await data.save();
+
+      const accessToken = data ? createToken(data, '5s') : null;
+      const refreshToken = data ? createToken(data, '120s') : null;
+
       resolve({
           err: data ? 0 : 1,
-          message: data ? 'Registration successful' : 'Registration',
-          data,
+          message: data ? 'Registered successful' : 'Registered fail',
+          data: data ? data : null ,
+          'access_token': accessToken ?  `Bearer ${accessToken}` : null,
+          'refresh_token': refreshToken ? `Bearer ${refreshToken}`: null,
       })
-      
+
+      if(refreshToken){
+        await userModel.updateOne({email}, {refreshToken})
+      }
+
   } catch (error) {
       console.log(error);
       reject(error);
   }
-})
+});
+
+const login = ({email, password}) => new Promise(async (resolve, reject) => {
+    try {
+      let data = await userModel.findOne({email});
+
+      if(!data){
+        resolve({
+          err: 1,
+          message: "Email is not registered"
+        });
+      }
+
+      const checkPassword = confirmPassword(password, data.password);
+
+      const accessToken = checkPassword ? createToken(data, '5s') : null;
+      const refreshToken = checkPassword ? createToken(data, '120s'): null;
+
+      resolve({
+        err: data? 0 : 1 ,
+        message: accessToken ?  "Login successful" : "Password is wrong" ,
+        data: checkPassword ? data : null,
+        'access_token' : accessToken ?  `Bearer ${accessToken}`: null,
+        'refresh_token' : refreshToken ? `Bearer ${refreshToken}` : null,
+      })
+
+      if(refreshToken){
+        await userModel.updateOne({email}, {refreshToken})
+      }
+      
+    } catch (error) {
+      console.log(error);
+      reject(error);
+    }
+});
 
 module.exports = {
   authenticateWithGitHub,
   authenticateWithGoogle,
   register,
+  login,
 };
