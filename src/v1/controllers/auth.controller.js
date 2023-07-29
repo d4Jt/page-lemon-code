@@ -8,7 +8,6 @@ const { findOneOrCreatePassport } = require('../models/repositories/user.reposit
 
 const handleGoogleCallback = (req, res, next) => {
    passport.authenticate('google', (err, profile) => {
-      console.log(profile);
       req.user = profile;
       return next();
    })(req, res, next);
@@ -32,6 +31,13 @@ const register = async (req, res) => {
    res.json(user);
 };
 
+const login = async (req, res) => {
+   const {email, password} = req.body;
+   const user = await authenticationService.login({email, password});
+   res.json(user);
+};
+
+
 module.exports = {
    handleGoogleCallback,
    handleGitHubCallback,
@@ -39,4 +45,5 @@ module.exports = {
    authenticateWithGitHub: authenticationService.authenticateWithGitHub,
    createUserPassport,
    register,
+   login,
 };

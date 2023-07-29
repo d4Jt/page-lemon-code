@@ -22,7 +22,7 @@ const userSchema = new Schema(
          unique: true,
       },
       msisdn: {
-         type: String,
+         type: String
       },
       password: {
          type: String,
@@ -42,6 +42,10 @@ const userSchema = new Schema(
          type: Boolean,
          default: false,
       },
+      refreshToken: {
+         type: String,
+         default: '',
+      }
    },
    {
       collection: 'Users',
