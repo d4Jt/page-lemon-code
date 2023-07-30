@@ -19,7 +19,7 @@ const createComment = ({pid,...body},userId) => new Promise(async (resolve, reje
     }
 })
 
-const updatePost = ({pid,cid,...body}, userId) => new Promise(async (resolve, reject) => {
+const updateComment = ({pid,cid,...body}, userId) => new Promise(async (resolve, reject) => {
     try {
         const comment = await commentModel.findById(cid);
         if(!comment) {
@@ -124,9 +124,10 @@ const getComment = ({...query}) => new Promise(async (resolve, reject) => {
 })
 
 module.exports = {
-    createPost,
-    updatePost,
-    softDeletePost,
-    getAllPosts,
-    getPosts,
+    createComment,
+    updateComment,
+    deleteComment,
+    softDeleteComment,
+    getComment,
+    getAllComment,
 }
