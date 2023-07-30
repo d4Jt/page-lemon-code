@@ -4,7 +4,6 @@ const {notAuth} = require('./handle_error');
 
 const verifyToken = (req, res, next) => {
     const token = req?.headers?.authorization;
-    console.log(token);
     if(!token) return notAuth('Access token is required', res);
     if (!token.startsWith("Bearer")) return notAuth('Access token invalid', res);
     const accessToken = token.split(' ')[1];

@@ -113,7 +113,8 @@ const  register = ({email,password,confirmPassword,...body}) => new Promise(asyn
 
 const login = ({email, password}) => new Promise(async (resolve, reject) => {
     try {
-      let data = await userModel.findOne({email});
+      let data = await userModel.findOne({email},{ refreshToken: 0, role: 0 });
+      //.populate('-refreshToken -password -role')
 
       if(!data){
         resolve({
@@ -123,7 +124,6 @@ const login = ({email, password}) => new Promise(async (resolve, reject) => {
       }
 
       const checkPassword = confirmPassword(password, data.password);
-
 
       const accessToken = checkPassword ? createToken({
         id: data.id,
@@ -153,6 +153,8 @@ const login = ({email, password}) => new Promise(async (resolve, reject) => {
       if(refreshToken){
         await userModel.updateOne({email}, {refreshToken})
       }
+
+     
       
     } catch (error) {
       console.log(error);

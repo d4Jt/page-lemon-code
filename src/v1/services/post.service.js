@@ -120,7 +120,7 @@ const getAllPosts = () => new Promise(async (resolve, reject) => {
 const getPosts = ({tags,...query}) => new Promise(async (resolve, reject) => {
     try {
         // (user === 'my') ? userId : user; 
-        const data = await postModel.find({tags: {$in: tags},...query});
+        const data = await postModel.find({tags: {$in: tags},isDeleted: false,...query});
         resolve({
             err: 0,
             message: data.length > 0 ? "Get post": "not found",
