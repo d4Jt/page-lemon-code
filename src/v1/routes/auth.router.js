@@ -1,6 +1,7 @@
 'use strict';
 const router = require('express').Router();
 const authController = require('../controllers/auth.controller');
+const verify = require('../middlewares/verifyToken');
 // const { create } = require('../models/comment.model');
 
 router.get('/google', authController.authenticateWithGoogle);
@@ -18,5 +19,7 @@ router.get('/github/callback', authController.handleGitHubCallback, authControll
 router.post('/register', authController.register);
 
 router.post('/login', authController.login);
+
+router.get('/refresh',verify, authController.refreshToken);
 
 module.exports = router;

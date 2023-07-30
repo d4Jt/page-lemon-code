@@ -19,13 +19,13 @@ const createComment = ({pid,...body},userId) => new Promise(async (resolve, reje
     }
 })
 
-const updateComment = ({pid,cid,...body}, userId) => new Promise(async (resolve, reject) => {
+const updateComment = ({cid,...body}) => new Promise(async (resolve, reject) => {
     try {
         const comment = await commentModel.findById(cid);
         if(!comment) {
             resolve({
                 err: 1,
-                message: "Post not found",
+                message: "Comment not found",
             })
         }
 

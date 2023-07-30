@@ -37,6 +37,11 @@ const login = async (req, res) => {
    res.json(user);
 };
 
+const refreshToken = async (req, res) => {
+   const response = await authenticationService.refreshToken(req.body.refreshToken)
+   res.status(200).json(response);
+};
+
 
 
 module.exports = {
@@ -47,4 +52,5 @@ module.exports = {
    createUserPassport,
    register,
    login,
+   refreshToken,
 };
