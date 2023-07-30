@@ -1,6 +1,6 @@
 const postModel = require('../models/post.model');
 const userModel = require('../models/user.model');
-const {findByIdPost} = require('../models/repositories/post.repositories');
+const {findByIdPost} = require('../models/repositories/find.repositories');
 
 const createPost = ({...body},userId) => new Promise(async (resolve, reject) => {
     try {
