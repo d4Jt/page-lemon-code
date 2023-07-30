@@ -6,6 +6,7 @@ const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const GitHubStrategy = require('passport-github2').Strategy;
 const userModel = require('../models/user.model');
 const {hashPassword, confirmPassword, createToken} = require('../utils');
+const jwt = require('jsonwebtoken');
 // const {findOneOrCreatePassport} = require('../models/repositories/user.repositories');
 // require('dotenv').config();
 
@@ -71,20 +72,38 @@ const  register = ({email,password,confirmPassword,...body}) => new Promise(asyn
       })
       await data.save();
 
-      const accessToken = data ? createToken(data, '5s') : null;
-      const refreshToken = data ? createToken(data, '120s') : null;
+
+      const accessToken = data ? createToken(
+        {
+          id: data.id,
+          email: data.email,
+          firstName: data.firstName, 
+          lastName: data.lastName,
+          avatar: data.avatar,
+          msisdn: data.msisdn
+        },
+         '1d') : null;
+      const refreshToken = data ? createToken({
+        id: data.id,
+        email: data.email,
+        firstName: data.firstName, 
+        lastName: data.lastName,
+        avatar: data.avatar,
+        msisdn: data.msisdn
+      }, '3d') : null;
 
       resolve({
           err: data ? 0 : 1,
           message: data ? 'Registered successful' : 'Registered fail',
           data: data ? data : null ,
           'access_token': accessToken ?  `Bearer ${accessToken}` : null,
-          'refresh_token': refreshToken ? `Bearer ${refreshToken}`: null,
+          'refresh_token': refreshToken ? refreshToken : null,
       })
 
       if(refreshToken){
         await userModel.updateOne({email}, {refreshToken})
       }
+
 
   } catch (error) {
       console.log(error);
@@ -105,15 +124,30 @@ const login = ({email, password}) => new Promise(async (resolve, reject) => {
 
       const checkPassword = confirmPassword(password, data.password);
 
-      const accessToken = checkPassword ? createToken(data, '5s') : null;
-      const refreshToken = checkPassword ? createToken(data, '120s'): null;
+
+      const accessToken = checkPassword ? createToken({
+        id: data.id,
+        email: data.email,
+        firstName: data.firstName, 
+        lastName: data.lastName,
+        avatar: data.avatar,
+        msisdn: data.msisdn
+      }, '1d') : null;
+      const refreshToken = checkPassword ? createToken({
+        id: data.id,
+        email: data.email,
+        firstName: data.firstName, 
+        lastName: data.lastName,
+        avatar: data.avatar,
+        msisdn: data.msisdn
+      }, '3d'): null;
 
       resolve({
         err: data? 0 : 1 ,
         message: accessToken ?  "Login successful" : "Password is wrong" ,
         data: checkPassword ? data : null,
         'access_token' : accessToken ?  `Bearer ${accessToken}`: null,
-        'refresh_token' : refreshToken ? `Bearer ${refreshToken}` : null,
+        'refresh_token' : refreshToken ? refreshToken : null,
       })
 
       if(refreshToken){
@@ -126,9 +160,46 @@ const login = ({email, password}) => new Promise(async (resolve, reject) => {
     }
 });
 
+const refreshToken = (refresh_token) => new Promise(async (resolve, reject) => {
+  try {
+    const data = await userModel.findOne({refreshToken: refresh_token});
+    
+    if(data){
+      jwt.verify(refresh_token, process.env.JWT_SECRET_REFRESH_TOKEN, (err) => {
+        if(err){
+          resolve({
+            err: 1,
+            msg: 'Refresh token expired.'
+          })
+        }else{
+          const accessToken = createToken({
+            id: data.id,
+            email: data.email,
+            firstName: data.firstName, 
+            lastName: data.lastName,
+            avatar: data.avatar,
+            msisdn: data.msisdn
+          }, '1d')
+          resolve({
+            err: accessToken ? 0 : 1,
+            mes: accessToken ? "Ok" : 'Fail to generate access token.',
+            'access_token': accessToken ? `Bearer ${accessToken}` : null,
+            'refresh_token': refresh_token,
+          })
+        }
+      })
+    }
+    
+  } catch (error) {
+    console.log(error);
+      reject(error);
+  }
+});
+
 module.exports = {
   authenticateWithGitHub,
   authenticateWithGoogle,
   register,
   login,
+  refreshToken,
 };

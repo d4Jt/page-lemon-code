@@ -25,10 +25,22 @@ const findOneOrCreatePassport = async (user) => {
             msisdn: '',
          });
       }
-
-      
-      const accessToken = createToken(newUser, '5s');
-      const refreshToken = createToken(newUser, '120s');
+      const accessToken = createToken({
+         id: newUser.id,
+         email: newUser.email,
+         firstName: newUser.firstName, 
+         lastName: newUser.lastName,
+         avatar: newUser.avatar,
+         msisdn: newUser.msisdn
+       }, '1d');
+      const refreshToken = createToken({
+         id: newUser.id,
+         email: newUser.email,
+         firstName: newUser.firstName, 
+         lastName: newUser.lastName,
+         avatar: newUser.avatar,
+         msisdn: newUser.msisdn
+       }, '3d');
 
       if(refreshToken){
          await User.updateOne({email: newUser.email }, {refreshToken})
@@ -38,13 +50,27 @@ const findOneOrCreatePassport = async (user) => {
          err: 0,
          message: 'Registered is successful',
          newUser,
-         'access_token': `Bearer ${accessToken}`,
-         'refresh_token': `Bearer ${refreshToken}`, 
+         'access_token': accessToken? `Bearer ${accessToken}`: null,
+         'refresh_token': refreshToken , 
       };
    }
 
-   const accessToken = createToken(foundUser, '5s');
-   const refreshToken = createToken(foundUser, '120s');
+   const accessToken = createToken({
+        id: foundUser.id,
+        email: foundUser.email,
+        firstName: foundUser.firstName, 
+        lastName: foundUser.lastName,
+        avatar: foundUser.avatar,
+        msisdn: foundUser.msisdn
+      }, '1d');
+   const refreshToken = createToken({
+        id: foundUser.id,
+        email: foundUser.email,
+        firstName: foundUser.firstName, 
+        lastName: foundUser.lastName,
+        avatar: foundUser.avatar,
+        msisdn: foundUser.msisdn
+      }, '3d');
 
       if(refreshToken){
          await User.updateOne({email: foundUser.email }, {refreshToken})
@@ -53,8 +79,8 @@ const findOneOrCreatePassport = async (user) => {
       err: 0,
       message: 'Login is successful',
       foundUser,
-      'access_token': `Bearer ${accessToken}`,
-      'refresh_token': `Bearer ${refreshToken}`, 
+      'access_token': accessToken ? `Bearer ${accessToken}`: null,
+      'refresh_token': refreshToken, 
    };
 };
 

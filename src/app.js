@@ -3,6 +3,7 @@ const app = express();
 const morgan = require('morgan');
 const helmet = require('helmet');
 const compression = require('compression');
+const cookieParser = require('cookie-parser');
 require('dotenv').config();
 
 // init middlewares
@@ -11,6 +12,7 @@ app.use(helmet()); // bao ve thong tin rieng tu, ngan chan web thu 3 truy cap do
 app.use(compression()); // giam dung luong van chuyen du lieu web
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 
 // init db
 // require('./v1/configs/init.multi.mongodb');
