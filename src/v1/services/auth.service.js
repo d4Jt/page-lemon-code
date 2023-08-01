@@ -137,7 +137,13 @@ const login = ({ email, password }) =>
             });
          }
 
-         const checkPassword = confirmPassword(password, data.password);
+         resolve({
+            err: accessToken ? 0 : 1,
+            message: accessToken ? 'Login successful' : 'Password is wrong',
+            data: checkPassword ? data : null,
+            access_token: accessToken ? `Bearer ${accessToken}` : null,
+            refresh_token: refreshToken ? refreshToken : null,
+         });
 
          const accessToken = checkPassword
             ? createToken(

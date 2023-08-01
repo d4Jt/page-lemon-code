@@ -133,8 +133,10 @@ const softDeletePost = (pid) =>
 const getAllPosts = () =>
    new Promise(async (resolve, reject) => {
       try {
-         const data = await postModel.find({ isDeleted: false }).exec();
-         console.log(typeof data);
+         const data = await postModel.find({ isDeleted: false }).populate({
+            path: 'userId',
+            select: 'avatar firstName lastName',
+         });
 
          resolve({
             err: 0,
@@ -151,11 +153,12 @@ const getPosts = ({ tags, ...query }) =>
    new Promise(async (resolve, reject) => {
       try {
          // (user === 'my') ? userId : user;
-         const data = await postModel.find({
-            tags: { $in: tags },
-            isDeleted: false,
-            ...query,
-         });
+         const data = await postModel
+            .find({ tags: { $in: tags }, isDeleted: false, ...query })
+            .populate({
+               path: 'userId',
+               select: 'avatar firstName lastName',
+            });
          resolve({
             err: 0,
             message: data.length > 0 ? 'Get post' : 'not found',
