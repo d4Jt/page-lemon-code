@@ -16,6 +16,7 @@ let whiteList = [
    `${process.env.URL_FRONTEND}`,
    'https://accounts.google.com/o/oauth2/v2/auth',
    'https://github.com/login/oauth/authorize',
+   'https://lemon-code-page.vercel.app',
 ];
 app.use(
    cors({
