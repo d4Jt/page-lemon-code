@@ -70,13 +70,16 @@ const register = ({ email, password, confirmPassword, ...body }) =>
                message: 'Wrong password!',
             });
 
-         const data = await userModel
-            .create({
-               email: email,
-               password: hashPassword(password),
-               ...body,
-            })
-            .lean();
+         const data = await userModel.create({
+            email,
+            password: hashPassword(password),
+            ...body,
+         });
+
+         const objectData = data.toObject();
+
+         delete objectData.password;
+         delete objectData.role;
 
          const accessToken = data
             ? createToken(
@@ -105,12 +108,13 @@ const register = ({ email, password, confirmPassword, ...body }) =>
               )
             : null;
 
-         delete data.password;
+         // delete jsonData.password;
+         console.log(objectData);
 
          resolve({
-            err: data ? 0 : 1,
-            message: data ? 'Registered successful' : 'Registered fail',
-            data: data ? data : null,
+            err: accessToken ? 0 : 1,
+            message: accessToken ? 'Registered successful' : 'Registered fail',
+            data: data ? objectData : null,
             access_token: accessToken ? `Bearer ${accessToken}` : null,
             refresh_token: refreshToken ? refreshToken : null,
          });
@@ -171,7 +175,7 @@ const login = ({ email, password }) =>
          delete data.password;
          console.log('after:: ', data);
          resolve({
-            err: data ? 0 : 1,
+            err: accessToken ? 0 : 1,
             message: accessToken ? 'Login successful' : 'Password is wrong',
             data: checkPassword ? data : null,
             access_token: accessToken ? `Bearer ${accessToken}` : null,
