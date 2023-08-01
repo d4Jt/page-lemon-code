@@ -3,7 +3,7 @@ const router = require('express').Router();
 const verify = require('../middlewares/verifyToken');
 const {isAdmin} = require('../middlewares/verifyRole');
 
-router.get('/getAll', userController.getAllUsers);
+router.get('/getAll',verify, isAdmin, userController.getAllUsers);
 
 router.get('/getCurrent',verify, userController.getCurrent);
 

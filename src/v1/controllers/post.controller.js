@@ -20,9 +20,21 @@ const getPosts = async (req, res) =>{
     res.status(200).json(post);
 }
 
+const getAllPosts = async(req, res) =>{
+    const post = await postService.getAllPosts();
+    res.status(200).json(post);
+}
+
+const deletePost = async (req, res) =>{
+    const post = await postService.deletePost(req.body.pid, req.query);
+    res.status(200).json(post);
+};
+
 module.exports = {
     createPost,
     updatePost,
     softDeletePost,
     getPosts,
+    getAllPosts,
+    deletePost,
 }
