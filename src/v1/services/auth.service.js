@@ -143,7 +143,7 @@ const login = ({email, password}) => new Promise(async (resolve, reject) => {
       }, '3d'): null;
 
       resolve({
-        err: data? 0 : 1 ,
+        err: accessToken ? 0 : 1 ,
         message: accessToken ?  "Login successful" : "Password is wrong" ,
         data: checkPassword ? data : null,
         'access_token' : accessToken ?  `Bearer ${accessToken}`: null,
