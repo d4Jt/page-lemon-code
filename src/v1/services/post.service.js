@@ -139,4 +139,5 @@ module.exports = {
     softDeletePost,
     getAllPosts,
     getPosts,
+    deletePost,
 }

@@ -14,6 +14,10 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
+
+app.get('/', (req, res) => {
+   res.status(200).json("ok");
+})
 // init db
 // require('./v1/configs/init.multi.mongodb');
 require('./v1/configs/init.mongodb');

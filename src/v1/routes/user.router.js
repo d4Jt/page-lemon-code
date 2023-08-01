@@ -7,7 +7,7 @@ router.get('/getAll',verify, isAdmin, userController.getAllUsers);
 
 router.get('/getCurrent',verify, userController.getCurrent);
 
-router.get('/getOne', userController.getOneUser);
+router.get('/getOne',verify, userController.getOneUser);
 
 router.put('/',verify, userController.updateUser);
 
