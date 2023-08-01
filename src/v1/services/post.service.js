@@ -35,7 +35,7 @@ const updatePost = ({pid,...body}) => new Promise(async (resolve, reject) => {
         const data = await postModel.findByIdAndUpdate(post.id,{
             ...body
         }, {new : true});
-        
+
 
 
         resolve({
@@ -64,8 +64,6 @@ const deletePost = (pid,userId) => new Promise(async (resolve, reject) => {
         if(data){
             await userModel.findByIdAndUpdate(userId,{$pull: {posts: pid}});
         }
-        
-
 
         resolve({
             err: 0,
@@ -119,14 +117,14 @@ const getAllPosts = () => new Promise(async (resolve, reject) => {
 
 const getPosts = ({tags,...query}) => new Promise(async (resolve, reject) => {
     try {
-        // (user === 'my') ? userId : user; 
+        // (user === 'my') ? userId : user;
         const data = await postModel.find({tags: {$in: tags},isDeleted: false,...query});
         resolve({
             err: 0,
             message: data.length > 0 ? "Get post": "not found",
             data : data.length > 0 ? data : null,
         })
-        
+
     } catch (error) {
         console.log(error);
         reject(error);
