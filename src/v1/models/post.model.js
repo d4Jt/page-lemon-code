@@ -25,10 +25,14 @@ const postSchema = new Schema(
       tags: {
          type: Array,
       },
+      slug: {
+         type: String,
+         unique: true,
+      },
       isDeleted: {
          type: Boolean,
          default: false,
-      }
+      },
    },
    {
       collection: 'Posts',

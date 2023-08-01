@@ -11,7 +11,12 @@ require('dotenv').config();
 app.use(morgan('dev')); // morgan('combined') full thong tin
 app.use(helmet()); // bao ve thong tin rieng tu, ngan chan web thu 3 truy cap doc thong tin, cookie
 app.use(compression()); // giam dung luong van chuyen du lieu web
-let whiteList = ['http://localhost:3000', `${process.env.URL_FRONTEND}`];
+let whiteList = [
+   'http://localhost:3000',
+   `${process.env.URL_FRONTEND}`,
+   'https://accounts.google.com/o/oauth2/v2/auth',
+   'https://github.com/login/oauth/authorize',
+];
 app.use(
    cors({
       origin: whiteList,
