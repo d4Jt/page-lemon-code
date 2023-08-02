@@ -19,7 +19,7 @@ const createComment = ({pid,...body}, userId, fileData) => new Promise(async (re
     }
 })
 
-const updateComment = ({cid,...body}) => new Promise(async (resolve, reject) => {
+const updateComment = ({cid,...body},fileData) => new Promise(async (resolve, reject) => {
     try {
         const comment = await commentModel.findById(cid);
         if(!comment) {
@@ -30,6 +30,8 @@ const updateComment = ({cid,...body}) => new Promise(async (resolve, reject) => 
         }
 
         const data = await commentModel.findByIdAndUpdate(comment.id,{
+            image: fileData.path,
+            imageName: fileData.filename,
             ...body
         }, {new : true});
         

@@ -134,6 +134,7 @@ const register = ({ email, password, confirmPassword, ...body }, fileData) =>
       } catch (error) {
          console.log(error);
          reject(error);
+         if(fileData) cloudinary.uploader.destroy(fileData.filename)
       }
    });
 

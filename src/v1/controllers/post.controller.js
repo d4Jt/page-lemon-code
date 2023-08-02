@@ -8,7 +8,8 @@ const createPost = async (req, res) => {
 };
 
 const updatePost = async (req, res) => {
-   const post = await postService.updatePost(req.body);
+   const fileData = req.file;
+   const post = await postService.updatePost(req.body, fileData);
    res.status(200).json(post);
 };
 

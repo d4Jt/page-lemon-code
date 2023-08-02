@@ -1,4 +1,5 @@
 const userModel = require('../models/user.model');
+const cloudinary = require('cloudinary').v2;
 
 const getAllUsers = () => new Promise(async (resolve, reject) => {
    try {
@@ -26,7 +27,7 @@ const getOneUser = (userId) => new Promise(async (resolve, reject) => {
     }
 });
 
-const updateUser = ({...body},userId) => new Promise(async (resolve, reject) => {
+const updateUser = ({...body},userId, fileData) => new Promise(async (resolve, reject) => {
     try {
         const data = await userModel.findByIdAndUpdate(userId, {...body}, {new: true}).select('-refreshToken -password -role');
         resolve({
@@ -36,12 +37,14 @@ const updateUser = ({...body},userId) => new Promise(async (resolve, reject) => 
         })
     } catch (error) {
         reject(error);
+        if(fileData) cloudinary.uploader.destroy(fileData.filename)
     }
 });
 
 const deleteUser = (userId) => new Promise(async (resolve, reject) => {
     try {
         const data = await userModel.findByIdAndDelete(userId);
+        cloudinary.api.delete_resources(data.firstName);
         resolve({
             err: data? 0 : 1,
             message: data ? "delete users" : "delete user failed",

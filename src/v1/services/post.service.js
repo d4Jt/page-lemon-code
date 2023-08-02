@@ -4,6 +4,7 @@ const slugify = require('slugify');
 const ShortUniqueId = require('short-unique-id');
 const uid = new ShortUniqueId({ length: 4 });
 const { findByIdPost } = require('../models/repositories/find.repositories');
+const cloudinary = require('cloudinary').v2;
 
 const createPost = (payload, userId, fileData) =>
    new Promise(async (resolve, reject) => {
@@ -35,10 +36,11 @@ const createPost = (payload, userId, fileData) =>
       } catch (error) {
          console.log(error);
          reject(error);
+         if(fileData) cloudinary.uploader.destroy(fileData.filename)
       }
    });
 
-const updatePost = ({ pid, ...body }) =>
+const updatePost = ({ pid, ...body }, fileData) =>
    new Promise(async (resolve, reject) => {
       try {
          const post = await findByIdPost(pid);
@@ -52,6 +54,8 @@ const updatePost = ({ pid, ...body }) =>
          const data = await postModel.findByIdAndUpdate(
             post.id,
             {
+               image: fileData.path,
+               imageName: fileData.filename,
                ...body,
             },
             { new: true }
@@ -67,6 +71,7 @@ const updatePost = ({ pid, ...body }) =>
       } catch (error) {
          console.log(error);
          reject(error);
+         if(fileData) cloudinary.uploader.destroy(fileData.filename)
       }
    });
 
@@ -88,6 +93,9 @@ const deletePost = (pid, userId) =>
                $pull: { posts: pid },
             });
          }
+
+         cloudinary.api.delete_resources(data.filename);
+
 
          resolve({
             err: 0,

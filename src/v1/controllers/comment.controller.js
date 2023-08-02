@@ -7,7 +7,8 @@ const createComment =async (req, res) =>{
 }
 
 const updateComment = async (req, res) =>{
-    const comment = await commentService.updateComment(req.body);
+    const fileData = req.file;
+    const comment = await commentService.updateComment(req.body, fileData);
     res.status(200).json(comment);
 };
 

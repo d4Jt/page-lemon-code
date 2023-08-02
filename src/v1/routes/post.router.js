@@ -9,7 +9,7 @@ const uploadCloud = require('../middlewares/uploader');
 router.get('/', postController.getPosts);
 router.get('/getAll', postController.getAllPosts);
 router.post('/', verifyToken,uploadCloud.single('image'), postController.createPost);
-router.put('/', verifyToken, postController.updatePost);
+router.put('/', verifyToken,uploadCloud.single('image'), postController.updatePost);
 router.put('/softDelete', verifyToken, postController.softDeletePost);
 router.delete('/', verifyToken, isAdmin, postController.deletePost);
 router.get('/:pslug', postController.getAPost);
