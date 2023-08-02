@@ -6,9 +6,12 @@ const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const GitHubStrategy = require('passport-github2').Strategy;
 const userModel = require('../models/user.model');
 const { hashPassword, confirmPassword, createToken } = require('../utils');
+require('dotenv').config();
 const jwt = require('jsonwebtoken');
 // const {findOneOrCreatePassport} = require('../models/repositories/user.repositories');
 // require('dotenv').config();
+
+const URL_SERVER = process.env.URL_SERVER;
 
 // Google OAuth configuration
 passport.use(
@@ -37,7 +40,9 @@ passport.use(
       {
          clientID: process.env.GITHUB_CLIENT_ID,
          clientSecret: process.env.GITHUB_CLIENT_SECRET,
-         callbackURL: `http://localhost:${process.env.PORT}/api/auth/github/callback`,
+         callbackURL: `${
+            URL_SERVER ? URL_SERVER : 'https://lemon-code-page.onrender.com'
+         }/api/auth/github/callback`,
          scope: ['user:email'], // Example: 'http://localhost:3000/auth/github/callback'
       },
       (accessToken, refreshToken, profile, done) => {
