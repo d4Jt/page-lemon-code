@@ -18,6 +18,7 @@ let whiteList = [
    'https://github.com/login/oauth/authorize',
    'https://github.com',
    'https://accounts.google.com',
+   'https://lemon-code-page.vercel.app',
 ];
 app.use(
    cors({
