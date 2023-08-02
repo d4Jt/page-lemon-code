@@ -122,7 +122,7 @@ const register = ({ email, password, confirmPassword, ...body }) =>
             err: accessToken ? 0 : 1,
             message: accessToken ? 'Registered successful' : 'Registered fail',
             data: data ? objectData : null,
-            access_token: accessToken ? `Bearer ${accessToken}` : null,
+            access_token: accessToken ? `${accessToken}` : null,
             refresh_token: refreshToken ? refreshToken : null,
          });
 
@@ -185,7 +185,7 @@ const login = ({ email, password }) =>
             err: accessToken ? 0 : 1,
             message: accessToken ? 'Login successful' : 'Password is wrong',
             data: checkPassword ? data : null,
-            access_token: accessToken ? `Bearer ${accessToken}` : null,
+            access_token: accessToken ? `${accessToken}` : null,
             refresh_token: refreshToken ? refreshToken : null,
          });
 
