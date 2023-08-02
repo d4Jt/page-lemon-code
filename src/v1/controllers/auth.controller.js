@@ -6,6 +6,8 @@ const authenticationService = require('../services/auth.service');
 
 const { findOneOrCreatePassport } = require('../models/repositories/user.repositories');
 
+const {internalServerError} = require('../middlewares/handle_error');
+
 const handleGoogleCallback = (req, res, next) => {
    passport.authenticate('google', (err, profile) => {
       req.user = profile;

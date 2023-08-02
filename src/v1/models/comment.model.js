@@ -19,7 +19,6 @@ const commentSchema = new Schema(
       },
       image: {
          type: String,
-         required: true,
       },
       imageName: {
          type: String,
