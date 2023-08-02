@@ -2,6 +2,7 @@
 const router = require('express').Router();
 const authController = require('../controllers/auth.controller');
 const verify = require('../middlewares/verifyToken');
+const uploadCloud = require('../middlewares/uploader');
 // const { create } = require('../models/comment.model');
 
 router.get('/google', authController.authenticateWithGoogle);
@@ -16,7 +17,7 @@ router.get('/github', authController.authenticateWithGitHub);
 // Route to handle GitHub callback
 router.get('/github/callback', authController.handleGitHubCallback, authController.createUserPassport);
 
-router.post('/register', authController.register);
+router.post('/register',uploadCloud.single('avatar'), authController.register);
 
 router.post('/login', authController.login);
 

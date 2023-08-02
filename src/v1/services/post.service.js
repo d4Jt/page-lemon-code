@@ -5,7 +5,7 @@ const ShortUniqueId = require('short-unique-id');
 const uid = new ShortUniqueId({ length: 4 });
 const { findByIdPost } = require('../models/repositories/find.repositories');
 
-const createPost = (payload, userId) =>
+const createPost = (payload, userId, fileData) =>
    new Promise(async (resolve, reject) => {
       try {
          const { title } = payload;
@@ -13,6 +13,8 @@ const createPost = (payload, userId) =>
          const data = new postModel({
             userId: userId,
             slug: slugify(`${title} ${uid()}`),
+            image: fileData.path,
+            imageName: fileData.filename,
             ...payload,
          });
          await data.save();

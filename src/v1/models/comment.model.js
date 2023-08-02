@@ -21,6 +21,9 @@ const commentSchema = new Schema(
          type: String,
          required: true,
       },
+      imageName: {
+         type: String,
+      },
       isDeleted: {
          type: Boolean,
          default: false,

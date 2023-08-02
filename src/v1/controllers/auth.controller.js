@@ -27,7 +27,8 @@ const createUserPassport = async (req, res) => {
 };
 
 const register = async (req, res) => {
-   const user = await authenticationService.register(req.body);
+   const fileData = req.file;
+   const user = await authenticationService.register(req.body, fileData);
    res.json(user);
 };
 
