@@ -6,9 +6,12 @@ const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const GitHubStrategy = require('passport-github2').Strategy;
 const userModel = require('../models/user.model');
 const { hashPassword, confirmPassword, createToken } = require('../utils');
+require('dotenv').config();
 const jwt = require('jsonwebtoken');
 // const {findOneOrCreatePassport} = require('../models/repositories/user.repositories');
 // require('dotenv').config();
+
+const URL_SERVER = process.env.URL_SERVER;
 
 // Google OAuth configuration
 passport.use(
@@ -16,7 +19,9 @@ passport.use(
       {
          clientID: process.env.GOOGLE_CLIENT_ID,
          clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-         callbackURL: `http://localhost:${process.env.PORT}/api/auth/google/callback`, // Example: 'http://localhost:3000/auth/google/callback'
+         callbackURL: `${
+            URL_SERVER ? URL_SERVER : 'https://lemon-code-page.onrender.com'
+         }/api/auth/google/callback`, // Example: 'http://localhost:3000/auth/google/callback'
       },
       (accessToken, refreshToken, profile, done) => {
          // findOneOrCreatePassport(profile);
@@ -37,7 +42,9 @@ passport.use(
       {
          clientID: process.env.GITHUB_CLIENT_ID,
          clientSecret: process.env.GITHUB_CLIENT_SECRET,
-         callbackURL: `http://localhost:${process.env.PORT}/api/auth/github/callback`,
+         callbackURL: `${
+            URL_SERVER ? URL_SERVER : 'https://lemon-code-page.onrender.com'
+         }/api/auth/github/callback`,
          scope: ['user:email'], // Example: 'http://localhost:3000/auth/github/callback'
       },
       (accessToken, refreshToken, profile, done) => {
@@ -117,7 +124,7 @@ const register = ({ email, password, confirmPassword, ...body }, fileData) =>
             err: accessToken ? 0 : 1,
             message: accessToken ? 'Registered successful' : 'Registered fail',
             data: data ? objectData : null,
-            access_token: accessToken ? `Bearer ${accessToken}` : null,
+            access_token: accessToken ? `${accessToken}` : null,
             refresh_token: refreshToken ? refreshToken : null,
          });
 
@@ -180,7 +187,7 @@ const login = ({ email, password }) =>
             err: accessToken ? 0 : 1,
             message: accessToken ? 'Login successful' : 'Password is wrong',
             data: checkPassword ? data : null,
-            access_token: accessToken ? `Bearer ${accessToken}` : null,
+            access_token: accessToken ? `${accessToken}` : null,
             refresh_token: refreshToken ? refreshToken : null,
          });
 
