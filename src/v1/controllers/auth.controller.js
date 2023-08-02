@@ -6,6 +6,8 @@ const authenticationService = require('../services/auth.service');
 
 const { findOneOrCreatePassport } = require('../models/repositories/user.repositories');
 
+const {internalServerError} = require('../middlewares/handle_error');
+
 const handleGoogleCallback = (req, res, next) => {
    passport.authenticate('google', (err, profile) => {
       req.user = profile;
@@ -27,7 +29,8 @@ const createUserPassport = async (req, res) => {
 };
 
 const register = async (req, res) => {
-   const user = await authenticationService.register(req.body);
+   const fileData = req.file;
+   const user = await authenticationService.register(req.body, fileData);
    res.json(user);
 };
 

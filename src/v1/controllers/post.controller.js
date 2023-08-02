@@ -1,12 +1,15 @@
 const postService = require('../services/post.service.js');
 
 const createPost = async (req, res) => {
-   const post = await postService.createPost(req.body, req.user.id);
-   res.json(post);
+   const fileData = req.file
+   const post = await postService.createPost(req.body, req.user.id, fileData);
+   console.log(req.files);
+   res.status(200).json(post);
 };
 
 const updatePost = async (req, res) => {
-   const post = await postService.updatePost(req.body);
+   const fileData = req.file;
+   const post = await postService.updatePost(req.body, fileData);
    res.status(200).json(post);
 };
 
@@ -46,3 +49,4 @@ module.exports = {
    deletePost,
    getAPost,
 };
+

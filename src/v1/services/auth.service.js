@@ -61,7 +61,7 @@ const authenticateWithGitHub = passport.authenticate('github', {
    scope: ['user:email'],
 });
 
-const register = ({ email, password, confirmPassword, ...body }) =>
+const register = ({ email, password, confirmPassword, ...body }, fileData) =>
    new Promise(async (resolve, reject) => {
       try {
          const findOneUser = await userModel.findOne({ email });
@@ -80,6 +80,8 @@ const register = ({ email, password, confirmPassword, ...body }) =>
          const data = await userModel.create({
             email,
             password: hashPassword(password),
+            avatar: fileData.path,
+            imageName: fileData.filename,
             ...body,
          });
 
@@ -132,6 +134,7 @@ const register = ({ email, password, confirmPassword, ...body }) =>
       } catch (error) {
          console.log(error);
          reject(error);
+         if(fileData) cloudinary.uploader.destroy(fileData.filename)
       }
    });
 
