@@ -19,7 +19,9 @@ passport.use(
       {
          clientID: process.env.GOOGLE_CLIENT_ID,
          clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-         callbackURL: `http://localhost:${process.env.PORT}/api/auth/google/callback`, // Example: 'http://localhost:3000/auth/google/callback'
+         callbackURL: `${
+            URL_SERVER ? URL_SERVER : 'https://lemon-code-page.onrender.com'
+         }/api/auth/google/callback`, // Example: 'http://localhost:3000/auth/google/callback'
       },
       (accessToken, refreshToken, profile, done) => {
          // findOneOrCreatePassport(profile);
