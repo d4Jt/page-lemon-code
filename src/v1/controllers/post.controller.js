@@ -1,4 +1,5 @@
 const postService = require('../services/post.service.js');
+const  {internalServerError} = require('../middlewares/handle_error');
 
 const createPost = async (req, res) => {
    const fileData = req.file
@@ -42,6 +43,15 @@ const getAPost = async (req, res) => {
    res.status(200).json(post);
 };
 
+const getAllTags = async (req, res) => {
+   try {
+      const tags = await postService.getAllTags();
+      return res.status(200).json(tags);
+   } catch (error) {
+      return internalServerError(res);
+   }
+};
+
 module.exports = {
    createPost,
    updatePost,
@@ -50,5 +60,6 @@ module.exports = {
    getAllPosts,
    deletePost,
    getAPost,
+   getAllTags,
 };
 

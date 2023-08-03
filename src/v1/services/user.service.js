@@ -48,14 +48,16 @@ const updateUser = ({...body},userId, fileData) => new Promise(async (resolve, r
 
 const deleteUser = (userId) => new Promise(async (resolve, reject) => {
     try {
+        // const user = await userModel.findById(userId).lean();
         const data = await userModel.findByIdAndDelete(userId).lean();
-        console.log(data);
+        console.log(data.imageName);
         cloudinary.api.delete_resources(data.imageName);
         resolve({
             err: data? 0 : 1,
             message: data ? "delete users" : "delete user failed",
             data: data ? data: null,
         })
+
     } catch (error) {
         reject(error);
     }
