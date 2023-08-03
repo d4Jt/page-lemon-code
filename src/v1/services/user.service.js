@@ -29,7 +29,7 @@ const getOneUser = (userId) => new Promise(async (resolve, reject) => {
 
 const updateUser = ({...body},userId, fileData) => new Promise(async (resolve, reject) => {
     try {
-        const data = await userModel.findByIdAndUpdate(userId, {...body}, {new: true}).select('-refreshToken -password -role');
+        const data = await userModel.findByIdAndUpdate(userId, {...body, avatar: fileData?.path, imageName: fileData?.filename }, {new: true}).select('-refreshToken -password -role');
         resolve({
             err: data? 0 : 1,
             message: data ? "update success" : "update failure",

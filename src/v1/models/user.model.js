@@ -15,7 +15,7 @@ const userSchema = new Schema(
       },
       avatar: {
          type: String,
-         default: ' ',
+         default: 'https://res.cloudinary.com/diip1zrth/image/upload/v1691030887/lemon-page-code/image_processing20201216-8146-1bkbicd_thj77c.png',
       },
       imageName: {
          type: String,
