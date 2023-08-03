@@ -8,6 +8,7 @@ const userModel = require('../models/user.model');
 const { hashPassword, confirmPassword, createToken } = require('../utils');
 require('dotenv').config();
 const jwt = require('jsonwebtoken');
+const cloudinary = require('cloudinary').v2;
 // const {findOneOrCreatePassport} = require('../models/repositories/user.repositories');
 // require('dotenv').config();
 
@@ -65,11 +66,14 @@ const register = ({ email, password, confirmPassword, ...body }, fileData) =>
    new Promise(async (resolve, reject) => {
       try {
          const findOneUser = await userModel.findOne({ email });
-         if (findOneUser)
+         if (findOneUser){
             resolve({
                err: 0,
                message: 'User already registered',
             });
+            if(fileData) cloudinary.uploader.destroy(fileData.filename);
+         }
+
 
          if (password !== confirmPassword)
             resolve({
@@ -80,8 +84,8 @@ const register = ({ email, password, confirmPassword, ...body }, fileData) =>
          const data = await userModel.create({
             email,
             password: hashPassword(password),
-            avatar: fileData.path,
-            imageName: fileData.filename,
+            avatar: fileData?.path,
+            imageName: fileData?.filename,
             ...body,
          });
 
@@ -93,7 +97,7 @@ const register = ({ email, password, confirmPassword, ...body }, fileData) =>
          const accessToken = data
             ? createToken(
                  {
-                    id: data.id,
+                    id: data._id,
                     email: data.email,
                     firstName: data.firstName,
                     lastName: data.lastName,
@@ -106,7 +110,7 @@ const register = ({ email, password, confirmPassword, ...body }, fileData) =>
          const refreshToken = data
             ? createToken(
                  {
-                    id: data.id,
+                    id: data._id,
                     email: data.email,
                     firstName: data.firstName,
                     lastName: data.lastName,
@@ -155,10 +159,12 @@ const login = ({ email, password }) =>
 
          const checkPassword = confirmPassword(password, data.password);
 
+         console.log(data);
+
          const accessToken = checkPassword
             ? createToken(
                  {
-                    id: data.id,
+                    id: data._id,
                     email: data.email,
                     firstName: data.firstName,
                     lastName: data.lastName,
@@ -171,7 +177,7 @@ const login = ({ email, password }) =>
          const refreshToken = checkPassword
             ? createToken(
                  {
-                    id: data.id,
+                    id: data._id,
                     email: data.email,
                     firstName: data.firstName,
                     lastName: data.lastName,
@@ -214,7 +220,7 @@ const refreshToken = (refresh_token) =>
                   if (err) {
                      resolve({
                         err: 1,
-                        msg: 'Refresh token expired.',
+                        message: 'Refresh token expired.',
                      });
                   } else {
                      const accessToken = createToken(
@@ -230,7 +236,7 @@ const refreshToken = (refresh_token) =>
                      );
                      resolve({
                         err: accessToken ? 0 : 1,
-                        mes: accessToken
+                        message: accessToken
                            ? 'Ok'
                            : 'Fail to generate access token.',
                         access_token: accessToken

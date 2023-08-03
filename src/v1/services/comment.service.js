@@ -2,6 +2,8 @@ const postModel = require('../models/post.model');
 const userModel = require('../models/user.model');
 const commentModel = require('../models/comment.model');
 const { findByIdComment } = require('../models/repositories/find.repositories');
+const cloudinary = require('cloudinary').v2;
+
 
 const createComment = ({pid,...body}, userId, fileData) => new Promise(async (resolve, reject) => {
     try {
@@ -43,6 +45,7 @@ const updateComment = ({cid,...body},fileData) => new Promise(async (resolve, re
     } catch (error) {
         console.log(error);
         reject(error);
+        if(fileData) cloudinary.uploader.destroy(fileData.filename)
     }
 })
 
@@ -57,6 +60,8 @@ const deleteComment = (cid) => new Promise(async (resolve, reject) => {
         }
 
         const data = await commentModel.findByIdAndDelete(comment.id);
+
+        cloudinary.api.delete_resources(data.imageName);
 
         resolve({
             err: 0,

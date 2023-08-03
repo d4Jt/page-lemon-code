@@ -15,7 +15,6 @@ const internalServerError = (res) =>{
         mes: error.message
     });
 }
-
  const notFound = (req, res) =>{
     const error = createError.NotFound('this is route is not defined');
     return res.status(error.status).json({

@@ -3,10 +3,10 @@ const {TokenExpiredError} = require('jsonwebtoken');
 const {notAuth} = require('./handle_error');
 
 const verifyToken = (req, res, next) => {
-    const token = req?.headers?.authorization;
-    if(!token) return notAuth('Access token is required', res);
-    if (!token.startsWith("Bearer")) return notAuth('Access token invalid', res);
-    const accessToken = token.split(' ')[1];
+    const accessToken = req?.headers?.authorization;
+    if(!accessToken) return notAuth('Access token is required', res);
+    // if (!token.startsWith("Bearer")) return notAuth('Access token invalid', res);
+    // const accessToken = token.split(' ')[1];
 
     jwt.verify(accessToken, process.env.JWT_SECRET_TOKEN, (err, user) => {
         if(err){
@@ -15,7 +15,8 @@ const verifyToken = (req, res, next) => {
             if(isChecked) return notAuth('Access token expired', res, isChecked);
         }
 
-        req.user = user,
+        req.user = user
+        console.log(user);
         next();
     })
 
