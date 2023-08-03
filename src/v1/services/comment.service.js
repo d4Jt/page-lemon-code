@@ -2,10 +2,12 @@ const postModel = require('../models/post.model');
 const userModel = require('../models/user.model');
 const commentModel = require('../models/comment.model');
 const { findByIdComment } = require('../models/repositories/find.repositories');
+const cloudinary = require('cloudinary').v2;
 
-const createComment = ({pid,...body},userId) => new Promise(async (resolve, reject) => {
+
+const createComment = ({pid,...body}, userId, fileData) => new Promise(async (resolve, reject) => {
     try {
-        const data = new commentModel({userId: userId, postId: pid,...body});
+        const data = new commentModel({userId: userId, postId: pid,...body, image: fileData.path, imageName: fileData.filename});
         await data.save();
 
         resolve({
@@ -19,7 +21,7 @@ const createComment = ({pid,...body},userId) => new Promise(async (resolve, reje
     }
 })
 
-const updateComment = ({cid,...body}) => new Promise(async (resolve, reject) => {
+const updateComment = ({cid,...body},fileData) => new Promise(async (resolve, reject) => {
     try {
         const comment = await commentModel.findById(cid);
         if(!comment) {
@@ -30,6 +32,8 @@ const updateComment = ({cid,...body}) => new Promise(async (resolve, reject) => 
         }
 
         const data = await commentModel.findByIdAndUpdate(comment.id,{
+            image: fileData.path,
+            imageName: fileData.filename,
             ...body
         }, {new : true});
         
@@ -41,6 +45,7 @@ const updateComment = ({cid,...body}) => new Promise(async (resolve, reject) => 
     } catch (error) {
         console.log(error);
         reject(error);
+        if(fileData) cloudinary.uploader.destroy(fileData.filename)
     }
 })
 
@@ -55,6 +60,8 @@ const deleteComment = (cid) => new Promise(async (resolve, reject) => {
         }
 
         const data = await commentModel.findByIdAndDelete(comment.id);
+
+        cloudinary.api.delete_resources(data.imageName);
 
         resolve({
             err: 0,

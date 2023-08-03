@@ -1,23 +1,43 @@
 const commentService = require('../services/comment.service');
+const {internalServerError} = require('../middlewares/handle_error')
 
 const createComment =async (req, res) =>{
-    const comment = await commentService.createComment(req.body,req.user.id);
-    res.json(comment);
+    try{
+        const fileData = req.file;
+        const comment = await commentService.createComment(req.body,req.user.id,fileData);
+        return res.json(comment);
+    }catch (err){
+        return internalServerError(res);
+    }
 }
 
 const updateComment = async (req, res) =>{
-    const comment = await commentService.updateComment(req.body);
-    res.status(200).json(comment);
+    try{
+        const fileData = req.file;
+        const comment = await commentService.updateComment(req.body, fileData);
+        return res.status(200).json(comment);
+    }catch(err){
+        return internalServerError(res);
+    }
 };
 
 const softDeleteComment = async (req, res) =>{
-    const comment = await commentService.softDeleteComment(req.body.cid);
-    res.status(200).json(comment);
+    try{
+        const comment = await commentService.softDeleteComment(req.body.cid);
+        return  res.status(200).json(comment);
+    }catch (err){
+        return internalServerError(res);
+    }
 }
 
 const getComment = async (req, res) =>{
-    const comment = await commentService.getComment(req.query);
-    res.status(200).json(comment);
+   try{
+       const comment = await commentService.getComment(req.query);
+       res.status(200).json(comment);
+   }catch (err){
+       const comment = await commentService.getComment(req.query);
+       res.status(200).json(comment);
+   }
 }
 
 const getAllComment = async (req, res) =>{
