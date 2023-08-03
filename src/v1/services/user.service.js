@@ -29,7 +29,7 @@ const getOneUser = (userId) => new Promise(async (resolve, reject) => {
 
 const updateUser = ({...body},userId, fileData) => new Promise(async (resolve, reject) => {
     try {
-        const data = await userModel.findByIdAndUpdate(userId, {...body}, {new: true}).select('-refreshToken -password -role');
+        const data = await userModel.findByIdAndUpdate(userId, {...body, avatar: fileData?.path, imageName: fileData?.filename }, {new: true}).select('-refreshToken -password -role');
         resolve({
             err: data? 0 : 1,
             message: data ? "update success" : "update failure",
@@ -44,7 +44,7 @@ const updateUser = ({...body},userId, fileData) => new Promise(async (resolve, r
 const deleteUser = (userId) => new Promise(async (resolve, reject) => {
     try {
         const data = await userModel.findByIdAndDelete(userId);
-        cloudinary.api.delete_resources(data.firstName);
+        cloudinary.api.delete_resources(data.imageName);
         resolve({
             err: data? 0 : 1,
             message: data ? "delete users" : "delete user failed",

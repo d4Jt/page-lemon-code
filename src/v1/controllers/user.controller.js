@@ -16,7 +16,8 @@ const getOneUser = async(req, res) => {
 };
 
 const updateUser = async(req, res) => {
-    const user = await userService.updateUser(req.body,req.user.id)
+    const fileData = req.file;
+    const user = await userService.updateUser(req.body,req.user.id,fileData);
     res.status(200).json(user);
 };
 
