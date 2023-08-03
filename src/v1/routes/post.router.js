@@ -13,5 +13,5 @@ router.put('/', verifyToken,uploadCloud.single('image'), postController.updatePo
 router.put('/softDelete', verifyToken, postController.softDeletePost);
 router.delete('/', verifyToken, isAdmin, postController.deletePost);
 router.get('/:pslug', postController.getAPost);
-router.get('/get/allTags', postController.getAllTags);
+router.get('/getAllTags', postController.getAllTags);
 module.exports = router;
