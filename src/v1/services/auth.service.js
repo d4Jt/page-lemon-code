@@ -62,7 +62,7 @@ const authenticateWithGitHub = passport.authenticate('github', {
    scope: ['user:email'],
 });
 
-const register = ({ email, password, confirmPassword, ...body }, fileData) =>
+const register = ({ email, password, ...body }) =>
    new Promise(async (resolve, reject) => {
       try {
          const findOneUser = await userModel.findOne({ email });
@@ -71,21 +71,11 @@ const register = ({ email, password, confirmPassword, ...body }, fileData) =>
                err: 0,
                message: 'User already registered',
             });
-            if(fileData) cloudinary.uploader.destroy(fileData.filename);
          }
-
-
-         if (password !== confirmPassword)
-            resolve({
-               err: 1,
-               message: 'Wrong password!',
-            });
 
          const data = await userModel.create({
             email,
             password: hashPassword(password),
-            avatar: fileData?.path,
-            imageName: fileData?.filename,
             ...body,
          });
 
@@ -101,7 +91,6 @@ const register = ({ email, password, confirmPassword, ...body }, fileData) =>
                     email: data.email,
                     firstName: data.firstName,
                     lastName: data.lastName,
-                    avatar: data.avatar,
                     msisdn: data.msisdn,
                  },
                  '1d'
@@ -114,7 +103,6 @@ const register = ({ email, password, confirmPassword, ...body }, fileData) =>
                     email: data.email,
                     firstName: data.firstName,
                     lastName: data.lastName,
-                    avatar: data.avatar,
                     msisdn: data.msisdn,
                  },
                  '3d'
@@ -122,7 +110,6 @@ const register = ({ email, password, confirmPassword, ...body }, fileData) =>
             : null;
 
          // delete jsonData.password;
-         console.log(objectData);
 
          resolve({
             err: accessToken ? 0 : 1,
@@ -138,7 +125,6 @@ const register = ({ email, password, confirmPassword, ...body }, fileData) =>
       } catch (error) {
          console.log(error);
          reject(error);
-         if(fileData) cloudinary.uploader.destroy(fileData.filename)
       }
    });
 

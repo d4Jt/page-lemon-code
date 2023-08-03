@@ -23,21 +23,32 @@ const handleGitHubCallback = (req, res, next) => {
 };
 
 const createUserPassport = async (req, res) => {
-   console.log('req.user', req.user);
-   const user = await findOneOrCreatePassport(req.user);
-   res.json(user);
+   try {
+      console.log('req.user', req.user);
+      const user = await findOneOrCreatePassport(req.user);
+      return res.json(user);
+   } catch (error) {
+      return internalServerError(res);
+   }
 };
 
 const register = async (req, res) => {
-   const fileData = req.file;
-   const user = await authenticationService.register(req.body, fileData);
-   res.json(user);
+   try {
+      const user = await authenticationService.register(req.body);
+      return res.json(user);
+   } catch (error) {
+      return internalServerError(res);
+   }
 };
 
 const login = async (req, res) => {
+  try {
    const {email, password} = req.body;
    const user = await authenticationService.login({email, password});
-   res.json(user);
+   return res.json(user);
+  } catch (error) {
+   return internalServerError(res);
+  }
 };
 
 const refreshToken = async (req, res) => {

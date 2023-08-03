@@ -17,7 +17,7 @@ router.get('/github', authController.authenticateWithGitHub);
 // Route to handle GitHub callback
 router.get('/github/callback', authController.handleGitHubCallback, authController.createUserPassport);
 
-router.post('/register',uploadCloud.single('avatar'), authController.register);
+router.post('/register', authController.register);
 
 router.post('/login', authController.login);
 
