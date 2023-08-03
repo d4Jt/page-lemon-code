@@ -16,6 +16,7 @@ const createComment = ({pid,...body}, userId, fileData) => new Promise(async (re
             data: data? data: null,
         })
     } catch (error) {
+        if(fileData) cloudinary.uploader.destroy(fileData.filename)
         console.log(error);
         reject(error);
     }
