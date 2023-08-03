@@ -3,7 +3,7 @@ const {TokenExpiredError} = require('jsonwebtoken');
 const {notAuth} = require('./handle_error');
 
 const verifyToken = (req, res, next) => {
-    const accessToken = req?.headers?.authorization;
+    const accessToken = req?.headers['Authorization'];
     if(!accessToken) return notAuth('Access token is required', res);
     // if (!token.startsWith("Bearer")) return notAuth('Access token invalid', res);
     // const accessToken = token.split(' ')[1];
