@@ -204,6 +204,33 @@ const getAPost = (slug) =>
       }
    });
 
+const getAllTags = () => new Promise(async(resolve, reject) =>{
+   try {
+      // (user === 'my') ? userId : user;
+      const data = await postModel.find({});
+
+      const allTags = [];
+
+      data.forEach(post => {
+         if(post.tags && post.tags.length > 0){
+            allTags.push(...post.tags);
+         }
+      });
+
+      // Loại bỏ các tag trùng lặp (nếu có)
+      const uniqueTags = [...new Set(allTags)];
+
+      resolve({
+         err: 0,
+         message: uniqueTags.length > 0 ? 'Get all tags success' : 'There are no tags',
+         data: uniqueTags,
+      });
+   } catch (error) {
+      console.log(error);
+      reject(error);
+   }
+});
+
 module.exports = {
    createPost,
    updatePost,
@@ -212,4 +239,5 @@ module.exports = {
    getPosts,
    deletePost,
    getAPost,
+   getAllTags,
 };
