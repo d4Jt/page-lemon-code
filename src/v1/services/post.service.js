@@ -55,6 +55,8 @@ const updatePost = ({ pid, ...body }, fileData) =>
             });
          }
 
+         cloudinary.api.delete_resources(post.imageName);
+
          const data = await postModel.findByIdAndUpdate(
             post.id,
             {
