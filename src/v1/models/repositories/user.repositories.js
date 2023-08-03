@@ -50,7 +50,7 @@ const findOneOrCreatePassport = async (user) => {
          err: 0,
          message: 'Registered is successful',
          newUser,
-         'access_token': accessToken? `Bearer ${accessToken}`: null,
+         'access_token': accessToken? `${accessToken}`: null,
          'refresh_token': refreshToken , 
       };
    }
@@ -79,7 +79,7 @@ const findOneOrCreatePassport = async (user) => {
       err: 0,
       message: 'Login is successful',
       foundUser,
-      'access_token': accessToken ? `Bearer ${accessToken}`: null,
+      'access_token': accessToken ? `${accessToken}`: null,
       'refresh_token': refreshToken, 
    };
 };
