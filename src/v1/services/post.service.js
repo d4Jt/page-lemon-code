@@ -131,7 +131,10 @@ const softDeletePost = (pid) =>
             { new: true }
          );
 
-         await commentsModel.updateMany({postId: data.id}, {isDeleted: true} );
+         await commentsModel.updateMany(
+            { postId: data.id },
+            { isDeleted: true }
+         );
 
          resolve({
             err: 0,
@@ -208,7 +211,7 @@ const getAllTags = () =>
    new Promise(async (resolve, reject) => {
       try {
          // (user === 'my') ? userId : user;
-         const data = await postModel.find({});
+         const data = await postModel.find({ isDeleted: false });
 
          const allTags = [];
 
