@@ -4,9 +4,11 @@ const passport = require('passport');
 
 const authenticationService = require('../services/auth.service');
 
-const { findOneOrCreatePassport } = require('../models/repositories/user.repositories');
+const {
+   findOneOrCreatePassport,
+} = require('../models/repositories/user.repositories');
 
-const {internalServerError} = require('../middlewares/handle_error');
+const { internalServerError } = require('../middlewares/handle_error');
 
 const handleGoogleCallback = (req, res, next) => {
    passport.authenticate('google', (err, profile) => {
@@ -42,21 +44,21 @@ const register = async (req, res) => {
 };
 
 const login = async (req, res) => {
-  try {
-   const {email, password} = req.body;
-   const user = await authenticationService.login({email, password});
-   return res.json(user);
-  } catch (error) {
-   return internalServerError(res);
-  }
+   try {
+      const { email, password } = req.body;
+      const user = await authenticationService.login({ email, password });
+      return res.json(user);
+   } catch (error) {
+      return internalServerError(res);
+   }
 };
 
 const refreshToken = async (req, res) => {
-   const response = await authenticationService.refreshToken(req.body.refreshToken)
+   const response = await authenticationService.refreshToken(
+      req.body.refreshToken
+   );
    res.status(200).json(response);
 };
-
-
 
 module.exports = {
    handleGoogleCallback,

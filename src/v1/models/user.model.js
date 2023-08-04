@@ -15,7 +15,8 @@ const userSchema = new Schema(
       },
       avatar: {
          type: String,
-         default: 'https://res.cloudinary.com/diip1zrth/image/upload/v1691030887/lemon-page-code/image_processing20201216-8146-1bkbicd_thj77c.png',
+         default:
+            'https://res.cloudinary.com/diip1zrth/image/upload/v1691030887/lemon-page-code/image_processing20201216-8146-1bkbicd_thj77c.png',
       },
       imageName: {
          type: String,
@@ -27,7 +28,7 @@ const userSchema = new Schema(
          unique: true,
       },
       msisdn: {
-         type: String
+         type: String,
       },
       password: {
          type: String,
@@ -47,16 +48,31 @@ const userSchema = new Schema(
          type: Boolean,
          default: false,
       },
+      isPublishedMsisdn: {
+         type: Boolean,
+         default: true,
+      },
+      isPublishedEmail: {
+         type: Boolean,
+         default: true,
+      },
       refreshToken: {
          type: String,
          default: '',
-      }
+      },
+      isDeleted: {
+         type: Boolean,
+         default: false,
+      },
+      score: Number,
    },
    {
       collection: 'Users',
       timestamps: true,
    }
 );
+
+userSchema.index({ firstName: 'text', lastName: 'text' });
 
 //Export the model
 module.exports = model('User', userSchema);

@@ -66,7 +66,7 @@ const register = ({ email, password, ...body }) =>
    new Promise(async (resolve, reject) => {
       try {
          const findOneUser = await userModel.findOne({ email });
-         if (findOneUser){
+         if (findOneUser) {
             resolve({
                err: 0,
                message: 'User already registered',

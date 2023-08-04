@@ -11,10 +11,12 @@ const createComment = ({pid,...body}, userId, fileData) => new Promise(async (re
         await data.save();
 
         resolve({
-            err: 0,
-            message: data? "Created comment successfully": "Failed to create comment",
-            data: data? data: null,
-        })
+           err: 0,
+           message: data
+              ? 'Created comment successfully'
+              : 'Failed to create comment',
+           data: data ? data : null,
+        });
     } catch (error) {
         if(fileData) cloudinary.uploader.destroy(fileData.filename)
         console.log(error);

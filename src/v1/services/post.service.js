@@ -13,7 +13,7 @@ const createPost = (payload, userId, fileData) =>
          const { title } = payload;
 
          const data = new postModel({
-            userId: userId,
+            user: userId,
             slug: slugify(`${title} ${uid()}`),
             image: fileData?.path,
             imageName: fileData?.filename,
@@ -21,14 +21,11 @@ const createPost = (payload, userId, fileData) =>
          });
          await data.save();
 
-         console.log(data);
-
          if (data) {
             await userModel.findByIdAndUpdate(data.userId, {
                $push: { posts: data.id },
             });
          }
-
 
          resolve({
             err: 0,
@@ -40,7 +37,7 @@ const createPost = (payload, userId, fileData) =>
       } catch (error) {
          console.log(error);
          reject(error);
-         if(fileData) cloudinary.uploader.destroy(fileData.filename)
+         if (fileData) cloudinary.uploader.destroy(fileData.filename);
       }
    });
 
@@ -77,7 +74,7 @@ const updatePost = ({ pid, ...body }, fileData) =>
       } catch (error) {
          console.log(error);
          reject(error);
-         if(fileData) cloudinary.uploader.destroy(fileData.filename)
+         if (fileData) cloudinary.uploader.destroy(fileData.filename);
       }
    });
 
@@ -93,13 +90,13 @@ const deletePost = (pid, userId) =>
          }
 
          const data = await postModel.findByIdAndDelete(post.id);
-         
+
          if (data) {
             await userModel.findByIdAndUpdate(userId, {
                $pull: { posts: post.id },
             });
          }
-         
+
          cloudinary.api.delete_resources(data.imageName);
          //
          //
@@ -150,7 +147,7 @@ const getAllPosts = () =>
    new Promise(async (resolve, reject) => {
       try {
          const data = await postModel.find({ isDeleted: false }).populate({
-            path: 'userId',
+            path: 'user',
             select: 'avatar firstName lastName',
          });
 
@@ -172,7 +169,7 @@ const getPosts = ({ tags, ...query }) =>
          const data = await postModel
             .find({ tags: { $in: tags }, isDeleted: false, ...query })
             .populate({
-               path: 'userId',
+               path: 'user',
                select: 'avatar firstName lastName',
             });
          resolve({
@@ -204,32 +201,58 @@ const getAPost = (slug) =>
       }
    });
 
-const getAllTags = () => new Promise(async(resolve, reject) =>{
-   try {
-      // (user === 'my') ? userId : user;
-      const data = await postModel.find({});
+const getAllTags = () =>
+   new Promise(async (resolve, reject) => {
+      try {
+         // (user === 'my') ? userId : user;
+         const data = await postModel.find({});
 
-      const allTags = [];
+         const allTags = [];
 
-      data.forEach(post => {
-         if(post.tags && post.tags.length > 0){
-            allTags.push(...post.tags);
-         }
-      });
+         data.forEach((post) => {
+            if (post.tags && post.tags.length > 0) {
+               allTags.push(...post.tags);
+            }
+         });
 
-      // Loại bỏ các tag trùng lặp (nếu có)
-      const uniqueTags = [...new Set(allTags)];
+         // Loại bỏ các tag trùng lặp (nếu có)
+         const uniqueTags = [...new Set(allTags)];
 
-      resolve({
-         err: 0,
-         message: uniqueTags.length > 0 ? 'Get all tags success' : 'There are no tags',
-         data: uniqueTags,
-      });
-   } catch (error) {
-      console.log(error);
-      reject(error);
-   }
-});
+         resolve({
+            err: 0,
+            message:
+               uniqueTags.length > 0
+                  ? 'Get all tags success'
+                  : 'There are no tags',
+            data: uniqueTags,
+         });
+      } catch (error) {
+         console.log(error);
+         reject(error);
+      }
+   });
+
+const getPostsOfUser = (userId, currentUser = '') =>
+   new Promise(async (resolve, reject) => {
+      try {
+         let data;
+         console.log(userId, currentUser);
+         if (userId === currentUser) {
+            data = await postModel.find({ user: userId }).lean();
+         } else data = await postModel.find({ user: userId }).lean(); // FIXME: drop data and add isPublished: true
+
+         resolve({
+            err: 0,
+            message: data
+               ? 'Get posts of user success'
+               : 'Failed to get posts of user',
+            data,
+         });
+      } catch (error) {
+         console.log(error);
+         reject(error);
+      }
+   });
 
 module.exports = {
    createPost,
@@ -240,4 +263,5 @@ module.exports = {
    deletePost,
    getAPost,
    getAllTags,
+   getPostsOfUser,
 };

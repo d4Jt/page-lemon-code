@@ -13,7 +13,7 @@ const postSchema = new Schema(
          type: String,
          required: true,
       },
-      userId: {
+      user: {
          type: Schema.Types.ObjectId,
          ref: 'User',
          required: true,
@@ -31,6 +31,12 @@ const postSchema = new Schema(
          type: String,
          unique: true,
       },
+      likes: Number,
+      comments: Number,
+      isPublished: {
+         type: Boolean,
+         default: true,
+      },
       isDeleted: {
          type: Boolean,
          default: false,
@@ -41,6 +47,8 @@ const postSchema = new Schema(
       timestamps: true,
    }
 );
+
+postSchema.index({ title: 'text', content: 'text' });
 
 //Export the model
 module.exports = model('Post', postSchema);

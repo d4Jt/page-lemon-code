@@ -5,8 +5,6 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
 
-
-
 const getInfoData = ({ fields = [], object = {} }) => {
    return _.pick(object, fields);
 };
@@ -67,19 +65,21 @@ const updateNestedObjectParser = (obj) => {
 const convertToObjectIdMongo = (id) => new Types.ObjectId(id);
 
 // hash passwords
-const hashPassword = password => bcrypt.hashSync(password, bcrypt.genSaltSync(10));
-const confirmPassword = (password, hashPassword) => bcrypt.compareSync(password, hashPassword);
+const hashPassword = (password) =>
+   bcrypt.hashSync(password, bcrypt.genSaltSync(10));
+const confirmPassword = (password, hashPassword) =>
+   bcrypt.compareSync(password, hashPassword);
 
 // jsonwebtoken
-const createToken = ({...data}, options) =>{
+const createToken = ({ ...data }, options) => {
    return jwt.sign(data, process.env.JWT_SECRET_TOKEN, {
-      expiresIn: options
-   })
-}
+      expiresIn: options,
+   });
+};
 
 const verifyToken = (token) => {
-   return jwt.verify(token, process.env.JWT_SECRET_TOKEN)
-}
+   return jwt.verify(token, process.env.JWT_SECRET_TOKEN);
+};
 
 module.exports = {
    Headers: {

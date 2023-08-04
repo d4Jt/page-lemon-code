@@ -1,12 +1,12 @@
 const User = require('../user.model');
-const {createToken} = require('../../utils');
+const { createToken } = require('../../utils');
 
 const findOneOrCreatePassport = async (user) => {
    const foundUser = await findOneUser(user.emails[0]?.value);
    if (!foundUser) {
       let newUser = null;
-      if(user.provider === 'google'){
-          newUser = await createNewUser({
+      if (user.provider === 'google') {
+         newUser = await createNewUser({
             firstName: user.name?.givenName ? user.name.givenName : '',
             lastName: user.name?.familyName
                ? user.name.familyName
@@ -16,71 +16,83 @@ const findOneOrCreatePassport = async (user) => {
             msisdn: '',
          });
       }
-      if(user.provider === 'github'){
+      if (user.provider === 'github') {
          newUser = await createNewUser({
             firstName: user.username ? user.username : '',
-            lastName: " ",
+            lastName: ' ',
             avatar: user.photos[0]?.value,
             email: user.emails[0]?.value,
             msisdn: '',
          });
       }
-      const accessToken = createToken({
-         id: newUser.id,
-         email: newUser.email,
-         firstName: newUser.firstName, 
-         lastName: newUser.lastName,
-         avatar: newUser.avatar,
-         msisdn: newUser.msisdn
-       }, '1d');
-      const refreshToken = createToken({
-         id: newUser.id,
-         email: newUser.email,
-         firstName: newUser.firstName, 
-         lastName: newUser.lastName,
-         avatar: newUser.avatar,
-         msisdn: newUser.msisdn
-       }, '3d');
+      const accessToken = createToken(
+         {
+            id: newUser.id,
+            email: newUser.email,
+            firstName: newUser.firstName,
+            lastName: newUser.lastName,
+            avatar: newUser.avatar,
+            msisdn: newUser.msisdn,
+         },
+         '1d'
+      );
+      const refreshToken = createToken(
+         {
+            id: newUser.id,
+            email: newUser.email,
+            firstName: newUser.firstName,
+            lastName: newUser.lastName,
+            avatar: newUser.avatar,
+            msisdn: newUser.msisdn,
+         },
+         '3d'
+      );
 
-      if(refreshToken){
-         await User.updateOne({email: newUser.email }, {refreshToken})
+      if (refreshToken) {
+         await User.updateOne({ email: newUser.email }, { refreshToken });
       }
 
       return {
          err: 0,
          message: 'Registered is successful',
          newUser,
-         'access_token': accessToken? `${accessToken}`: null,
-         'refresh_token': refreshToken , 
+         access_token: accessToken ? `${accessToken}` : null,
+         refresh_token: refreshToken,
       };
    }
 
-   const accessToken = createToken({
-        id: foundUser.id,
-        email: foundUser.email,
-        firstName: foundUser.firstName, 
-        lastName: foundUser.lastName,
-        avatar: foundUser.avatar,
-        msisdn: foundUser.msisdn
-      }, '1d');
-   const refreshToken = createToken({
-        id: foundUser.id,
-        email: foundUser.email,
-        firstName: foundUser.firstName, 
-        lastName: foundUser.lastName,
-        avatar: foundUser.avatar,
-        msisdn: foundUser.msisdn
-      }, '3d');
+   const accessToken = createToken(
+      {
+         id: foundUser.id,
+         email: foundUser.email,
+         firstName: foundUser.firstName,
+         lastName: foundUser.lastName,
+         avatar: foundUser.avatar,
+         msisdn: foundUser.msisdn,
+      },
+      '1d'
+   );
+   const refreshToken = createToken(
+      {
+         id: foundUser.id,
+         email: foundUser.email,
+         firstName: foundUser.firstName,
+         lastName: foundUser.lastName,
+         avatar: foundUser.avatar,
+         msisdn: foundUser.msisdn,
+      },
+      '3d'
+   );
 
-      if(refreshToken){
-         await User.updateOne({email: foundUser.email }, {refreshToken})
-      }
+   if (refreshToken) {
+      await User.updateOne({ email: foundUser.email }, { refreshToken });
+   }
    return {
       err: 0,
       message: 'Login is successful',
       foundUser,
-      'access_token': accessToken ? `${accessToken}`: null,
-      'refresh_token': refreshToken, 
+      access_token: accessToken ? `${accessToken}` : null,
+      refresh_token: refreshToken,
    };
 };
 
