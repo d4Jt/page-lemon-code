@@ -238,8 +238,21 @@ const getPostsOfUser = (userId, currentUser = '') =>
          let data;
          console.log(userId, currentUser);
          if (userId === currentUser) {
-            data = await postModel.find({ user: userId }).lean();
-         } else data = await postModel.find({ user: userId }).lean(); // FIXME: drop data and add isPublished: true
+            data = await postModel
+               .find({ user: userId })
+               .populate({
+                  path: 'user',
+                  select: 'avatar firstName lastName',
+               })
+               .lean();
+         } else
+            data = await postModel
+               .find({ user: userId })
+               .populate({
+                  path: 'user',
+                  select: 'avatar firstName lastName',
+               })
+               .lean(); // FIXME: drop data and add isPublished: true
 
          resolve({
             err: 0,
