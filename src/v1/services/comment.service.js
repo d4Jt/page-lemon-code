@@ -7,7 +7,14 @@ const cloudinary = require('cloudinary').v2;
 
 const createComment = ({pid,...body}, userId, fileData) => new Promise(async (resolve, reject) => {
     try {
-        const data = new commentModel({userId: userId, postId: pid,...body, image: fileData.path, imageName: fileData.filename});
+        const data = new commentModel({
+            userId: userId, 
+            postId: pid, 
+            image: fileData.path, 
+            imageName: fileData.filename, 
+            ...body
+        });
+        console.log(userId);
         await data.save();
 
         resolve({
@@ -35,8 +42,8 @@ const updateComment = ({cid,...body},fileData) => new Promise(async (resolve, re
         }
 
         const data = await commentModel.findByIdAndUpdate(comment.id,{
-            image: fileData.path,
-            imageName: fileData.filename,
+            image: fileData?.path,
+            imageName: fileData?.filename,
             ...body
         }, {new : true});
         
