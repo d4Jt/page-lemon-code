@@ -4,6 +4,7 @@ const verifyToken = require('../middlewares/verifyToken');
 const { isAdmin } = require('../middlewares/verifyRole');
 const router = require('express').Router();
 const uploadCloud = require('../middlewares/uploader');
+const comment = require('../models/comment.model');
 
 // router.post('/create',verifyToken, postController.createPost);
 router.get('/', postController.getPosts);
@@ -25,5 +26,7 @@ router.get('/getPostsUser/:uid', postController.getPostsOfUser);
 router.put('/softDelete', verifyToken, postController.softDeletePost);
 router.delete('/', verifyToken, isAdmin, postController.deletePost);
 router.get('/:pslug', postController.getAPost);
+
+
 
 module.exports = router;

@@ -10,8 +10,8 @@ const createComment = ({pid,...body}, userId, fileData) => new Promise(async (re
         const data = new commentModel({
             userId: userId, 
             postId: pid, 
-            image: fileData.path, 
-            imageName: fileData.filename, 
+            image: fileData?.path, 
+            imageName: fileData?.filename, 
             ...body
         });
         console.log(userId);
@@ -25,7 +25,7 @@ const createComment = ({pid,...body}, userId, fileData) => new Promise(async (re
            data: data ? data : null,
         });
     } catch (error) {
-        if(fileData) cloudinary.uploader.destroy(fileData.filename)
+        if(fileData) cloudinary.uploader.destroy(fileData?.filename)
         console.log(error);
         reject(error);
     }
