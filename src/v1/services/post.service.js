@@ -1,5 +1,6 @@
 const postModel = require('../models/post.model');
 const userModel = require('../models/user.model');
+const commentsModel = require('../models/comment.model');
 const slugify = require('slugify');
 const ShortUniqueId = require('short-unique-id');
 const uid = new ShortUniqueId({ length: 4 });
@@ -129,6 +130,8 @@ const softDeletePost = (pid) =>
             { isDeleted: true },
             { new: true }
          );
+
+         await commentsModel.updateMany({postId: data.id}, {isDeleted: true} );
 
          resolve({
             err: 0,

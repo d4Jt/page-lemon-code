@@ -10,8 +10,16 @@ router.post(
    '/',
    verify,
    uploadCloud.single('image'),
+   (req,res,next)=>{
+      console.log(req.user);
+      console.log(req.file);
+      next();
+   },
    commentController.createComment
 );
+// router.post('/',verify, (req,res) => {
+//    res.json(req.body);
+// })
 router.put('/softDelete', verify, commentController.softDeleteComment);
 router.put(
    '/',
