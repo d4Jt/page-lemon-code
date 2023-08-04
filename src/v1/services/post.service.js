@@ -5,7 +5,9 @@ const slugify = require('slugify');
 const ShortUniqueId = require('short-unique-id');
 const uid = new ShortUniqueId({ length: 4 });
 const { findByIdPost } = require('../models/repositories/find.repositories');
+const commentModel = require('../models/comment.model');
 const cloudinary = require('cloudinary').v2;
+
 
 const createPost = (payload, userId, fileData) =>
    new Promise(async (resolve, reject) => {
@@ -99,14 +101,21 @@ const deletePost = (pid, userId) =>
          }
 
          cloudinary.api.delete_resources(data.imageName);
-         //
+         
+         const comments = await commentModel.find({postId:post.id}).select('id');
+
+         comments.map(async comment =>{
+           const deleteComment = await commentModel.findByIdAndDelete(comment.id);
+           cloudinary.api.delete_resources(deleteComment.imageName);
+         })
+
          //
          resolve({
             err: 0,
             message: post
                ? 'Delete post successfully'
                : 'Failed to delete post',
-            post,
+            
          });
       } catch (error) {
          console.log(error);
