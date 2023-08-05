@@ -104,7 +104,7 @@ const deletePost = (pid, userId) =>
 
          if (data) {
             await userModel.findByIdAndUpdate(userId, {
-               $pull: { posts: post.id },
+               $pull: { posts: post.id, likedPosts: post.id, savedPosts: post.id },
             });
          }
 
@@ -120,6 +120,7 @@ const deletePost = (pid, userId) =>
             );
             cloudinary.api.delete_resources(deleteComment.imageName);
          });
+
 
          //
          resolve({
@@ -157,6 +158,12 @@ const softDeletePost = (pid, userId) =>
             { isDeleted: true },
             { new: true }
          );
+         
+         if (data) {
+            await userModel.findByIdAndUpdate(userId, {
+               $pull: { posts: post.id, likedPosts: post.id, savedPosts: post.id },
+            });
+         }
 
          await commentModel.updateMany(
             { postId: data.id },
@@ -224,6 +231,7 @@ const getAPost = (slug) =>
          // (user === 'my') ? userId : user;
          const data = await postModel.findOne({
             slug,
+            isDeleted: false
          });
          resolve({
             err: 0,

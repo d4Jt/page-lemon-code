@@ -37,16 +37,16 @@ const updateComment = ({ cid, ...body }, userId, fileData) =>
          const comment = await commentModel.findById(cid);
          if (!comment) {
             resolve({
-               err: 1,
-               message: 'Comment not found',
-            });
-         }
-         if (!comment.userId.equals(userId)) {
+                err: 1,
+                message: "Comment not found",
+            })
+        }
+        if(!comment.userId.equals(userId)){
             resolve({
-               err: 1,
-               message: 'You do not have permission to update',
-            });
-         }
+                err: 1,
+                message: "You do not have permission to update"
+            })
+        }
 
          const data = await commentModel.findByIdAndUpdate(
             comment.id,
