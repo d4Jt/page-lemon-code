@@ -24,7 +24,37 @@ const getOneUser = (userId) =>
       try {
          const data = await userModel
             .findById(userId)
-            .select('-refreshToken -password -role');
+            .select('-refreshToken -password -isDeleted -isActived')
+            .populate([
+               {
+                  path: 'posts',
+                  select: '-isDeleted -isPublished',
+               },
+               {
+                  path: 'likedPosts',
+                  select: '-isDeleted -isPublished',
+                  populate: {
+                     path: 'user',
+                     select: 'firstName lastName avatar',
+                  },
+               },
+               {
+                  path: 'likedComments',
+                  select: '-isDeleted -isPublished',
+                  populate: {
+                     path: 'user',
+                     select: 'firstName lastName avatar',
+                  },
+               },
+               {
+                  path: 'savedPosts',
+                  select: '-isDeleted -isPublished',
+                  populate: {
+                     path: 'user',
+                     select: 'firstName lastName avatar',
+                  },
+               },
+            ]);
          resolve({
             err: data ? 0 : 1,
             message: data ? 'Get all users' : 'get failed',
@@ -40,11 +70,11 @@ const updateUser = ({ ...body }, userId, fileData) =>
       try {
          const user = await userModel.findById(userId).lean();
 
-         if(!user._id.equals(userId)){
+         if (!user._id.equals(userId)) {
             resolve({
                err: 1,
-               message: 'You do not have permission to update'
-            })
+               message: 'You do not have permission to update',
+            });
          }
 
          cloudinary.api.delete_resources(user.imageName);
@@ -77,25 +107,29 @@ const deleteUser = (userId) =>
       try {
          const data = await userModel.findByIdAndDelete(userId).lean();
          console.log(data.imageName);
-         if(data.imageName){
+         if (data.imageName) {
             cloudinary.api.delete_resources(data.imageName);
          }
 
-         data.posts.map( async post =>{
+         data.posts.map(async (post) => {
             const deletePost = await postModel.findByIdAndDelete(post);
-            if(deletePost?.imageName){
+            if (deletePost?.imageName) {
                cloudinary.api.delete_resources(deletePost.imageName);
             }
-            const comments = await commentModel.find({postId: deletePost.id}).select('id');
-            if(comments.length > 0){
-               comments.map(async comment => {
-               const deleteComment = await commentModel.findByIdAndDelete(comment.id);
-               if(deleteComment.imageName){
-                  cloudinary.api.delete_resources(deleteComment.imageName);
-               }
-            })
+            const comments = await commentModel
+               .find({ postId: deletePost.id })
+               .select('id');
+            if (comments.length > 0) {
+               comments.map(async (comment) => {
+                  const deleteComment = await commentModel.findByIdAndDelete(
+                     comment.id
+                  );
+                  if (deleteComment.imageName) {
+                     cloudinary.api.delete_resources(deleteComment.imageName);
+                  }
+               });
             }
-         })
+         });
 
          resolve({
             err: data ? 0 : 1,
@@ -113,13 +147,16 @@ const getCurrent = (userId) =>
          const data = await userModel
             .findById(userId)
             .select('-refreshToken -password -role')
-            .populate([{
-               path: 'posts',
-               select: '-isDeleted',
-            },{
-               path: 'savedPosts',
-               select: '-isDeleted',
-            }]);
+            .populate([
+               {
+                  path: 'posts',
+                  select: '-isDeleted',
+               },
+               {
+                  path: 'savedPosts',
+                  select: '-isDeleted',
+               },
+            ]);
          resolve({
             err: data ? 0 : 1,
             message: data ? 'Get current users' : 'Get current user failed',
@@ -130,29 +167,29 @@ const getCurrent = (userId) =>
       }
    });
 
-const savedPosts = ({save, pid}, userId) => new Promise(async (resolve, reject) => {
-   try {
-      const posts = await postModel.findById(pid);
+const savedPosts = ({ save, pid }, userId) =>
+   new Promise(async (resolve, reject) => {
+      try {
+         const posts = await postModel.findById(pid);
 
-      if(save){
-         await userModel.findByIdAndUpdate(userId,{
-            $addToSet: {savedPosts: posts.id}
-         })
-      }else{
-         await userModel.findByIdAndUpdate(userId,{
-            $pull: {savedPosts: posts.id}
-         })
+         if (save) {
+            await userModel.findByIdAndUpdate(userId, {
+               $addToSet: { savedPosts: posts.id },
+            });
+         } else {
+            await userModel.findByIdAndUpdate(userId, {
+               $pull: { savedPosts: posts.id },
+            });
+         }
+
+         resolve({
+            err: 0,
+            message: posts ? 'Save posts successfully' : 'Save posts failed',
+         });
+      } catch (error) {
+         reject(error);
       }
-
-      resolve({
-         err: 0,
-         message: posts ? 'Save posts successfully': 'Save posts failed',
-      })
-      
-   } catch (error) {
-      reject(error);
-   }
-})
+   });
 
 module.exports = {
    getAllUsers,
