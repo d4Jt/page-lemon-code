@@ -226,6 +226,7 @@ const getAPost = (slug) =>
          // (user === 'my') ? userId : user;
          const data = await postModel.findOne({
             slug,
+            isDeleted: false
          });
          resolve({
             err: 0,

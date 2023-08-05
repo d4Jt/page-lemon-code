@@ -39,12 +39,14 @@ const updateComment = ({cid,...body},userId,fileData) => new Promise(async (reso
                 err: 1,
                 message: "Comment not found",
             })
+            if(fileData) cloudinary.uploader.destroy(fileData?.filename)
         }
         if(!comment.userId.equals(userId)){
             resolve({
                 err: 1,
                 message: "You do not have permission to update"
             })
+            if(fileData) cloudinary.uploader.destroy(fileData?.filename)
         }
 
         const data = await commentModel.findByIdAndUpdate(comment.id,{
