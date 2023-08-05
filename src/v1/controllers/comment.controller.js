@@ -18,7 +18,7 @@ const createComment = async (req, res) => {
 const updateComment = async (req, res) => {
    try {
       const fileData = req.file;
-      const comment = await commentService.updateComment(req.body, fileData);
+      const comment = await commentService.updateComment(req.body,req.user.id, fileData);
       return res.status(200).json(comment);
    } catch (err) {
       return internalServerError(res);
@@ -27,7 +27,7 @@ const updateComment = async (req, res) => {
 
 const softDeleteComment = async (req, res) => {
    try {
-      const comment = await commentService.softDeleteComment(req.body.cid);
+      const comment = await commentService.softDeleteComment(req.body.cid, req.user.id);
       return res.status(200).json(comment);
    } catch (err) {
       return internalServerError(res);

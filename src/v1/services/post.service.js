@@ -43,15 +43,25 @@ const createPost = (payload, userId, fileData) =>
       }
    });
 
-const updatePost = ({ pid, ...body }, fileData) =>
+const updatePost = ({ pid, ...body },userId, fileData) =>
    new Promise(async (resolve, reject) => {
       try {
+         
          const post = await findByIdPost(pid);
          if (!post) {
             resolve({
                err: 1,
                message: 'Post not found',
             });
+            if (fileData) cloudinary.uploader.destroy(fileData.filename);
+         }
+
+         if(!post.user.equals(userId)){
+            resolve({
+               err: 1,
+               message: 'You do not have permission to update'
+            })
+            if (fileData) cloudinary.uploader.destroy(fileData.filename);
          }
 
          cloudinary.api.delete_resources(post.imageName);
@@ -125,7 +135,7 @@ const deletePost = (pid, userId) =>
       }
    });
 
-const softDeletePost = (pid) =>
+const softDeletePost = (pid, userId) =>
    new Promise(async (resolve, reject) => {
       try {
          const post = await findByIdPost(pid);
@@ -134,6 +144,14 @@ const softDeletePost = (pid) =>
                err: 1,
                message: 'Post not found',
             });
+         }
+
+
+         if(!post.user.equals(userId)){
+            resolve({
+               err: 1,
+               message: 'You do not have permission to delete'
+            })
          }
 
          const data = await postModel.findByIdAndUpdate(

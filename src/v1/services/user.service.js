@@ -40,6 +40,13 @@ const updateUser = ({ ...body }, userId, fileData) =>
       try {
          const user = await userModel.findById(userId).lean();
 
+         if(!user._id.equals(userId)){
+            resolve({
+               err: 1,
+               message: 'You do not have permission to update'
+            })
+         }
+
          cloudinary.api.delete_resources(user.imageName);
 
          const data = await userModel
@@ -106,10 +113,13 @@ const getCurrent = (userId) =>
          const data = await userModel
             .findById(userId)
             .select('-refreshToken -password -role')
-            .populate({
+            .populate([{
                path: 'posts',
                select: '-isDeleted',
-            });
+            },{
+               path: 'savedPosts',
+               select: '-isDeleted',
+            }]);
          resolve({
             err: data ? 0 : 1,
             message: data ? 'Get current users' : 'Get current user failed',
@@ -120,10 +130,35 @@ const getCurrent = (userId) =>
       }
    });
 
+const savedPosts = ({save, pid}, userId) => new Promise(async (resolve, reject) => {
+   try {
+      const posts = await postModel.findById(pid);
+
+      if(save){
+         await userModel.findByIdAndUpdate(userId,{
+            $addToSet: {savedPosts: posts.id}
+         })
+      }else{
+         await userModel.findByIdAndUpdate(userId,{
+            $pull: {savedPosts: posts.id}
+         })
+      }
+
+      resolve({
+         err: 0,
+         message: posts ? 'Save posts successfully': 'Save posts failed',
+      })
+      
+   } catch (error) {
+      reject(error);
+   }
+})
+
 module.exports = {
    getAllUsers,
    getOneUser,
    deleteUser,
    updateUser,
    getCurrent,
+   savedPosts,
 };
