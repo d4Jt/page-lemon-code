@@ -11,12 +11,12 @@ const createPost = async (req, res) => {
 
 const updatePost = async (req, res) => {
    const fileData = req.file;
-   const post = await postService.updatePost(req.body, fileData);
+   const post = await postService.updatePost(req.body,req.user.id, fileData);
    res.status(200).json(post);
 };
 
 const softDeletePost = async (req, res) => {
-   const post = await postService.softDeletePost(req.body.pid);
+   const post = await postService.softDeletePost(req.body.pid, req.user.id);
    res.status(200).json(post);
 };
 

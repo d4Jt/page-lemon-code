@@ -56,6 +56,12 @@ const userSchema = new Schema(
             ref: 'Comment',
          },
       ],
+      savedPosts: [
+         {
+            type: Schema.Types.ObjectId,
+            ref: 'Post',
+         }
+      ],
       isActivated: {
          type: Boolean,
          default: false,

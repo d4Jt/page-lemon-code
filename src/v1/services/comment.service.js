@@ -31,13 +31,19 @@ const createComment = ({pid,...body}, userId, fileData) => new Promise(async (re
     }
 })
 
-const updateComment = ({cid,...body},fileData) => new Promise(async (resolve, reject) => {
+const updateComment = ({cid,...body},userId,fileData) => new Promise(async (resolve, reject) => {
     try {
         const comment = await commentModel.findById(cid);
         if(!comment) {
             resolve({
                 err: 1,
                 message: "Comment not found",
+            })
+        }
+        if(!comment.userId.equals(userId)){
+            resolve({
+                err: 1,
+                message: "You do not have permission to update"
             })
         }
 
@@ -84,13 +90,20 @@ const deleteComment = (cid) => new Promise(async (resolve, reject) => {
     }
 })
 
-const softDeleteComment = (cid) => new Promise(async (resolve, reject) => {
+const softDeleteComment = (cid, userId) => new Promise(async (resolve, reject) => {
     try {
         const comment = await findByIdComment(cid);
         if(!comment) {
             resolve({
                 err: 1,
                 message: "Comment not found",
+            })
+        }
+
+        if(!comment.userId.equals(userId)){
+            resolve({
+                err: 1,
+                message: "You do not have permission to delete"
             })
         }
 

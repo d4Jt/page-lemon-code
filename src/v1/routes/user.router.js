@@ -17,6 +17,8 @@ router.put(
    userController.updateUser
 );
 
+router.post('/savedPosts', verify, userController.savedPosts);
+
 router.delete('/', verify, isAdmin, userController.deleteUser);
 
 module.exports = router;
