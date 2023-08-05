@@ -23,10 +23,9 @@ router.put(
 );
 router.get('/getAllTags', postController.getAllTags);
 router.get('/getPostsUser/:uid', postController.getPostsOfUser);
+router.post('/like/:pid', verifyToken, postController.reactPost);
 router.put('/softDelete', verifyToken, postController.softDeletePost);
 router.delete('/', verifyToken, isAdmin, postController.deletePost);
 router.get('/:pslug', postController.getAPost);
-
-
 
 module.exports = router;

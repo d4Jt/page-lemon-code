@@ -1,13 +1,12 @@
 const postModel = require('../models/post.model');
 const userModel = require('../models/user.model');
-const commentsModel = require('../models/comment.model');
+const commentModel = require('../models/comment.model');
 const slugify = require('slugify');
 const ShortUniqueId = require('short-unique-id');
 const uid = new ShortUniqueId({ length: 4 });
 const { findByIdPost } = require('../models/repositories/find.repositories');
-const commentModel = require('../models/comment.model');
+const { convertToObjectIdMongo } = require('../utils');
 const cloudinary = require('cloudinary').v2;
-
 
 const createPost = (payload, userId, fileData) =>
    new Promise(async (resolve, reject) => {
@@ -101,13 +100,17 @@ const deletePost = (pid, userId) =>
          }
 
          cloudinary.api.delete_resources(data.imageName);
-         
-         const comments = await commentModel.find({postId:post.id}).select('id');
 
-         comments.map(async comment =>{
-           const deleteComment = await commentModel.findByIdAndDelete(comment.id);
-           cloudinary.api.delete_resources(deleteComment.imageName);
-         })
+         const comments = await commentModel
+            .find({ postId: post.id })
+            .select('id');
+
+         comments.map(async (comment) => {
+            const deleteComment = await commentModel.findByIdAndDelete(
+               comment.id
+            );
+            cloudinary.api.delete_resources(deleteComment.imageName);
+         });
 
          //
          resolve({
@@ -115,7 +118,6 @@ const deletePost = (pid, userId) =>
             message: post
                ? 'Delete post successfully'
                : 'Failed to delete post',
-            
          });
       } catch (error) {
          console.log(error);
@@ -140,7 +142,7 @@ const softDeletePost = (pid) =>
             { new: true }
          );
 
-         await commentsModel.updateMany(
+         await commentModel.updateMany(
             { postId: data.id },
             { isDeleted: true }
          );
@@ -161,10 +163,12 @@ const softDeletePost = (pid) =>
 const getAllPosts = () =>
    new Promise(async (resolve, reject) => {
       try {
-         const data = await postModel.find({ isDeleted: false }).populate({
-            path: 'user',
-            select: 'avatar firstName lastName',
-         });
+         const data = await postModel
+            .find({ isDeleted: false, isPublished: true })
+            .populate({
+               path: 'user',
+               select: 'avatar firstName lastName',
+            });
 
          resolve({
             err: 0,
@@ -251,7 +255,7 @@ const getPostsOfUser = (userId, currentUser = '') =>
    new Promise(async (resolve, reject) => {
       try {
          let data;
-         console.log(userId, currentUser);
+
          if (userId === currentUser) {
             data = await postModel
                .find({ user: userId })
@@ -262,7 +266,7 @@ const getPostsOfUser = (userId, currentUser = '') =>
                .lean();
          } else
             data = await postModel
-               .find({ user: userId })
+               .find({ user: userId, isPublished: true })
                .populate({
                   path: 'user',
                   select: 'avatar firstName lastName',
@@ -282,6 +286,76 @@ const getPostsOfUser = (userId, currentUser = '') =>
       }
    });
 
+const reactPost = (pid, userId, quantity) => {
+   return new Promise(async (resolve, reject) => {
+      try {
+         const post = await postModel.findById(pid);
+         if (!post) {
+            resolve({
+               err: 1,
+               message: 'Post not found',
+            });
+         }
+
+         const data = await postModel.findByIdAndUpdate(
+            pid,
+            {
+               $inc: { likes: quantity },
+            },
+            { new: true }
+         );
+
+         let likedPost;
+         if (data && +quantity === 1) {
+            const user = await userModel.findById(userId);
+            if (!user) {
+               resolve({
+                  err: 1,
+                  message: 'User not found',
+               });
+            }
+
+            likedPost = await userModel
+               .findByIdAndUpdate(
+                  userId,
+                  {
+                     $addToSet: { likedPosts: convertToObjectIdMongo(pid) },
+                  },
+                  { new: true }
+               )
+               .select(['likedPosts', '_id', 'firstName', 'lastName']);
+         } else if (data && +quantity === -1) {
+            const user = await userModel.findById(userId);
+            if (!user) {
+               resolve({
+                  err: 1,
+                  message: 'User not found',
+               });
+            }
+
+            likedPost = await userModel
+               .findByIdAndUpdate(
+                  userId,
+                  {
+                     $pull: { likedPosts: convertToObjectIdMongo(pid) },
+                  },
+                  { new: true }
+               )
+               .select(['likedPosts', '_id', 'firstName', 'lastName']);
+         }
+
+         resolve({
+            err: 0,
+            message: data ? 'React post successfully' : 'Failed to react post',
+            data: { post: data, likedPost },
+         });
+      } catch (error) {
+         console.log(error);
+         reject(error);
+      }
+   });
+};
+
 module.exports = {
    createPost,
    updatePost,
@@ -292,4 +366,5 @@ module.exports = {
    getAPost,
    getAllTags,
    getPostsOfUser,
+   reactPost,
 };
