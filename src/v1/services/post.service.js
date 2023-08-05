@@ -25,7 +25,7 @@ const createPost = (payload, userId, fileData) =>
          await data.save();
 
          if (data) {
-            await userModel.findByIdAndUpdate(data.userId, {
+            await userModel.findByIdAndUpdate(userId, {
                $push: { posts: data.id },
             });
          }
