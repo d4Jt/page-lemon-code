@@ -44,6 +44,18 @@ const userSchema = new Schema(
             ref: 'Post',
          },
       ],
+      likedPosts: [
+         {
+            type: Schema.Types.ObjectId,
+            ref: 'Post',
+         },
+      ],
+      likedComments: [
+         {
+            type: Schema.Types.ObjectId,
+            ref: 'Comment',
+         },
+      ],
       isActivated: {
          type: Boolean,
          default: false,
