@@ -23,7 +23,10 @@ const commentSchema = new Schema(
       imageName: {
          type: String,
       },
-      likes: Number,
+      likes: {
+         type: Number,
+         default: 0,
+      },
       isDeleted: {
          type: Boolean,
          default: false,

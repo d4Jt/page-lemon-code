@@ -31,8 +31,14 @@ const postSchema = new Schema(
          type: String,
          unique: true,
       },
-      likes: Number,
-      comments: Number,
+      likes: {
+         type: Number,
+         default: 0,
+      },
+      comments: {
+         type: Number,
+         default: 0,
+      },
       isPublished: {
          type: Boolean,
          default: true,

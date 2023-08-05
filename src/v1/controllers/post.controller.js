@@ -66,6 +66,26 @@ const getPostsOfUser = async (req, res) => {
    }
 };
 
+const reactPost = async (req, res) => {
+   try {
+      const currentUser = req?.body?.uid
+         ? req.body.uid
+         : req?.user?.id
+         ? req.user.id
+         : '';
+
+      const likePost = await postService.reactPost(
+         req.params.pid,
+         currentUser,
+         req.body.quantity
+      );
+      return res.status(200).json(likePost);
+   } catch (e) {
+      console.error(error);
+      return internalServerError(res);
+   }
+};
+
 module.exports = {
    createPost,
    updatePost,
@@ -76,4 +96,5 @@ module.exports = {
    getAPost,
    getAllTags,
    getPostsOfUser,
+   reactPost,
 };
