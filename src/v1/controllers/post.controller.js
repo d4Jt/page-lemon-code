@@ -11,7 +11,7 @@ const createPost = async (req, res) => {
 
 const updatePost = async (req, res) => {
    const fileData = req.file;
-   const post = await postService.updatePost(req.body,req.user.id, fileData);
+   const post = await postService.updatePost(req.body, req.user.id, fileData);
    res.status(200).json(post);
 };
 
@@ -77,7 +77,7 @@ const reactPost = async (req, res) => {
       const likePost = await postService.reactPost(
          req.params.pid,
          currentUser,
-         req.body.quantity
+         { quantity: req.body.quantity, save: req.body.save }
       );
       return res.status(200).json(likePost);
    } catch (e) {

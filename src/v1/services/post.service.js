@@ -43,10 +43,9 @@ const createPost = (payload, userId, fileData) =>
       }
    });
 
-const updatePost = ({ pid, ...body },userId, fileData) =>
+const updatePost = ({ pid, ...body }, userId, fileData) =>
    new Promise(async (resolve, reject) => {
       try {
-         
          const post = await findByIdPost(pid);
          if (!post) {
             resolve({
@@ -56,11 +55,11 @@ const updatePost = ({ pid, ...body },userId, fileData) =>
             if (fileData) cloudinary.uploader.destroy(fileData.filename);
          }
 
-         if(!post.user.equals(userId)){
+         if (!post.user.equals(userId)) {
             resolve({
                err: 1,
-               message: 'You do not have permission to update'
-            })
+               message: 'You do not have permission to update',
+            });
             if (fileData) cloudinary.uploader.destroy(fileData.filename);
          }
 
@@ -146,12 +145,11 @@ const softDeletePost = (pid, userId) =>
             });
          }
 
-
-         if(!post.user.equals(userId)){
+         if (!post.user.equals(userId)) {
             resolve({
                err: 1,
-               message: 'You do not have permission to delete'
-            })
+               message: 'You do not have permission to delete',
+            });
          }
 
          const data = await postModel.findByIdAndUpdate(
@@ -276,7 +274,7 @@ const getPostsOfUser = (userId, currentUser = '') =>
 
          if (userId === currentUser) {
             data = await postModel
-               .find({ user: userId })
+               .find({ user: userId, isDeleted: false })
                .populate({
                   path: 'user',
                   select: 'avatar firstName lastName',
@@ -284,7 +282,7 @@ const getPostsOfUser = (userId, currentUser = '') =>
                .lean();
          } else
             data = await postModel
-               .find({ user: userId, isPublished: true })
+               .find({ user: userId, isPublished: true, isDeleted: false })
                .populate({
                   path: 'user',
                   select: 'avatar firstName lastName',
@@ -304,7 +302,7 @@ const getPostsOfUser = (userId, currentUser = '') =>
       }
    });
 
-const reactPost = (pid, userId, quantity) => {
+const reactPost = (pid, userId, { quantity, save }) => {
    return new Promise(async (resolve, reject) => {
       try {
          const post = await postModel.findById(pid);
@@ -324,7 +322,7 @@ const reactPost = (pid, userId, quantity) => {
          );
 
          let likedPost;
-         if (data && +quantity === 1) {
+         if (data && (+quantity === 1 || save === true)) {
             const user = await userModel.findById(userId);
             if (!user) {
                resolve({
@@ -332,7 +330,15 @@ const reactPost = (pid, userId, quantity) => {
                   message: 'User not found',
                });
             }
+            const isInUse = user.likedPosts.some(
+               (id) => id.toString() === pid.toString()
+            );
 
+            if (isInUse)
+               resolve({
+                  err: 1,
+                  message: "You've already liked this post",
+               });
             likedPost = await userModel
                .findByIdAndUpdate(
                   userId,
@@ -341,8 +347,15 @@ const reactPost = (pid, userId, quantity) => {
                   },
                   { new: true }
                )
-               .select(['likedPosts', '_id', 'firstName', 'lastName']);
-         } else if (data && +quantity === -1) {
+               .select([
+                  'likedPosts',
+                  '_id',
+                  'firstName',
+                  'lastName',
+                  'savedPosts',
+                  'likedComments',
+               ]);
+         } else if (data && (+quantity === -1 || save === false)) {
             const user = await userModel.findById(userId);
             if (!user) {
                resolve({

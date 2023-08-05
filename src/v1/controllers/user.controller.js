@@ -1,5 +1,5 @@
 const userService = require('../services/user.service');
-const {internalServerError} = require('../middlewares/handle_error');
+const { internalServerError } = require('../middlewares/handle_error');
 
 const getAllUsers = async (req, res) => {
    const user = await userService.getAllUsers();
@@ -12,7 +12,7 @@ const getCurrent = async (req, res) => {
 };
 
 const getOneUser = async (req, res) => {
-   const user = await userService.getOneUser(req.query.uid);
+   const user = await userService.getOneUser(req.params.uid);
    res.status(200).json(user);
 };
 
@@ -29,8 +29,8 @@ const deleteUser = async (req, res) => {
 
 const savedPosts = async (req, res) => {
    try {
-      const {save, pid} = req.body;
-      const posts = await userService.savedPosts({save, pid}, req.user.id);
+      const { save, pid } = req.body;
+      const posts = await userService.savedPosts({ save, pid }, req.user.id);
       return res.status(200).json(posts);
    } catch (error) {
       return internalServerError(res);

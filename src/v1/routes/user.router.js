@@ -4,11 +4,11 @@ const verify = require('../middlewares/verifyToken');
 const { isAdmin } = require('../middlewares/verifyRole');
 const uploadCloud = require('../middlewares/uploader');
 
+router.get('/:uid', verify, userController.getOneUser);
+
 router.get('/getAll', verify, isAdmin, userController.getAllUsers);
 
 router.get('/getCurrent', verify, userController.getCurrent);
-
-router.get('/getOne', verify, userController.getOneUser);
 
 router.put(
    '/',
