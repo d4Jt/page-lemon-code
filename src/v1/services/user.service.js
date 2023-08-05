@@ -2,7 +2,7 @@ const commentModel = require('../models/comment.model');
 const postModel = require('../models/post.model');
 const userModel = require('../models/user.model');
 const cloudinary = require('cloudinary').v2;
-const {convertToObjectIdMongo} = require('../utils');
+const { convertToObjectIdMongo } = require('../utils');
 
 const getAllUsers = () =>
    new Promise(async (resolve, reject) => {
@@ -24,7 +24,7 @@ const getOneUser = (userId) =>
    new Promise(async (resolve, reject) => {
       try {
          const data = await userModel
-            .findById(userId)
+            .findById(convertToObjectIdMongo(userId))
             .select('-refreshToken -password -isDeleted -isActived')
             .populate([
                {
@@ -145,11 +145,8 @@ const deleteUser = (userId) =>
 const getCurrent = (userId) =>
    new Promise(async (resolve, reject) => {
       try {
-         
-         const uid = convertToObjectIdMongo(userId);
-
          const data = await userModel
-            .findById(uid)
+            .findById(convertToObjectIdMongo(userId))
             .select('-refreshToken -password -role')
             .populate([
                {
