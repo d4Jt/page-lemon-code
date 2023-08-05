@@ -1,3 +1,5 @@
+const commentModel = require('../models/comment.model');
+const postModel = require('../models/post.model');
 const userModel = require('../models/user.model');
 const cloudinary = require('cloudinary').v2;
 
@@ -66,10 +68,28 @@ const updateUser = ({ ...body }, userId, fileData) =>
 const deleteUser = (userId) =>
    new Promise(async (resolve, reject) => {
       try {
-         // const user = await userModel.findById(userId).lean();
-         const data = await userModel.findByIdAndDelete(userId).lean();
-         console.log(data.imageName);
-         cloudinary.api.delete_resources(data.imageName);
+         // const data = await userModel.findByIdAndDelete(userId).lean();
+         // console.log(data.imageName);
+         // cloudinary.api.delete_resources(data.imageName);
+
+         const data = await userModel.findById(userId);
+
+         data.posts.map( async post =>{
+            const deletePost = await postModel.findByIdAndDelete(post);
+            if(deletePost.imageName){
+               cloudinary.api.delete_resources(deletePost.imageName);
+            }
+            const comments = await commentModel.find({postId: deletePost.id}).select('id');
+            if(comments.length > 0){
+               comments.map(async comment => {
+               const deleteComment = await commentModel.findByIdAndDelete(comment.id);
+               if(deleteComment.imageName){
+                  cloudinary.api.delete_resources(deleteComment.imageName);
+               }
+            })
+            }
+         })
+
          resolve({
             err: data ? 0 : 1,
             message: data ? 'delete users' : 'delete user failed',
