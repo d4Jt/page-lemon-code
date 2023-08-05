@@ -4,7 +4,6 @@ const verify = require('../middlewares/verifyToken');
 const { isAdmin } = require('../middlewares/verifyRole');
 const uploadCloud = require('../middlewares/uploader');
 
-router.get('/:uid', verify, userController.getOneUser);
 
 router.get('/getAll', verify, isAdmin, userController.getAllUsers);
 
@@ -20,5 +19,7 @@ router.put(
 router.post('/savedPosts', verify, userController.savedPosts);
 
 router.delete('/', verify, isAdmin, userController.deleteUser);
+
+router.get('/:uid', userController.getOneUser);
 
 module.exports = router;

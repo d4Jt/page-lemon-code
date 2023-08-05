@@ -145,11 +145,9 @@ const deleteUser = (userId) =>
 const getCurrent = (userId) =>
    new Promise(async (resolve, reject) => {
       try {
-         
-         const uid = convertToObjectIdMongo(userId);
 
          const data = await userModel
-            .findById(uid)
+            .findById(userId)
             .select('-refreshToken -password -role')
             .populate([
                {
@@ -170,7 +168,7 @@ const getCurrent = (userId) =>
          reject(error);
       }
    });
-
+   
 const savedPosts = ({ save, pid }, userId) =>
    new Promise(async (resolve, reject) => {
       try {
