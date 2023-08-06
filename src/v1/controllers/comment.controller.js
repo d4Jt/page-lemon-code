@@ -50,7 +50,7 @@ const getAllComment = async (req, res) => {
 };
 
 const deleteComment = async (req, res) => {
-   const comment = await commentService.deleteComment(req.body.cid);
+   const comment = await commentService.deleteComment(req.body.cid, req.user.id);
    res.status(200).json(comment);
 };
 
