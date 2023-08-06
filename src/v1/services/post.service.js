@@ -104,7 +104,11 @@ const deletePost = (pid, userId) =>
 
          if (data) {
             await userModel.findByIdAndUpdate(userId, {
-               $pull: { posts: post.id, likedPosts: post.id, savedPosts: post.id },
+               $pull: {
+                  posts: post.id,
+                  likedPosts: post.id,
+                  savedPosts: post.id,
+               },
             });
          }
 
@@ -120,7 +124,6 @@ const deletePost = (pid, userId) =>
             );
             cloudinary.api.delete_resources(deleteComment.imageName);
          });
-
 
          //
          resolve({
@@ -158,10 +161,14 @@ const softDeletePost = (pid, userId) =>
             { isDeleted: true },
             { new: true }
          );
-         
+
          if (data) {
             await userModel.findByIdAndUpdate(userId, {
-               $pull: { posts: post.id, likedPosts: post.id, savedPosts: post.id },
+               $pull: {
+                  posts: post.id,
+                  likedPosts: post.id,
+                  savedPosts: post.id,
+               },
             });
          }
 
@@ -231,7 +238,7 @@ const getAPost = (slug) =>
          // (user === 'my') ? userId : user;
          const data = await postModel.findOne({
             slug,
-            isDeleted: false
+            isDeleted: false,
          });
          resolve({
             err: 0,
@@ -320,74 +327,91 @@ const reactPost = (pid, userId, { quantity, save }) => {
                message: 'Post not found',
             });
          }
+         if (quantity !== 1 && quantity !== -1) {
+            resolve({
+               err: 1,
+               message: 'Quantity must be 1 or -1',
+            });
+         } else {
+            let data;
+            let likedPost;
 
-         const data = await postModel.findByIdAndUpdate(
-            pid,
-            {
-               $inc: { likes: quantity },
-            },
-            { new: true }
-         );
+            if (data && (+quantity === 1 || save === true)) {
+               const user = await userModel.findById(userId);
+               if (!user) {
+                  resolve({
+                     err: 1,
+                     message: 'User not found',
+                  });
+               }
+               const isInUse = user.likedPosts.some(
+                  (id) => id.toString() === pid.toString()
+               );
 
-         let likedPost;
-         if (data && (+quantity === 1 || save === true)) {
-            const user = await userModel.findById(userId);
-            if (!user) {
-               resolve({
-                  err: 1,
-                  message: 'User not found',
-               });
-            }
-            const isInUse = user.likedPosts.some(
-               (id) => id.toString() === pid.toString()
-            );
-
-            if (isInUse)
-               resolve({
-                  err: 1,
-                  message: "You've already liked this post",
-               });
-            likedPost = await userModel
-               .findByIdAndUpdate(
-                  userId,
+               if (isInUse)
+                  resolve({
+                     err: 1,
+                     message: "You've already liked this post",
+                  });
+               data = await postModel.findByIdAndUpdate(
+                  pid,
                   {
-                     $addToSet: { likedPosts: convertToObjectIdMongo(pid) },
+                     $inc: { likes: quantity },
                   },
                   { new: true }
-               )
-               .select([
-                  'likedPosts',
-                  '_id',
-                  'firstName',
-                  'lastName',
-                  'savedPosts',
-                  'likedComments',
-               ]);
-         } else if (data && (+quantity === -1 || save === false)) {
-            const user = await userModel.findById(userId);
-            if (!user) {
-               resolve({
-                  err: 1,
-                  message: 'User not found',
-               });
-            }
+               );
 
-            likedPost = await userModel
-               .findByIdAndUpdate(
-                  userId,
+               likedPost = await userModel
+                  .findByIdAndUpdate(
+                     userId,
+                     {
+                        $addToSet: { likedPosts: convertToObjectIdMongo(pid) },
+                     },
+                     { new: true }
+                  )
+                  .select([
+                     'likedPosts',
+                     '_id',
+                     'firstName',
+                     'lastName',
+                     'savedPosts',
+                     'likedComments',
+                  ]);
+            } else if (data && (+quantity === -1 || save === false)) {
+               const user = await userModel.findById(userId);
+               if (!user) {
+                  resolve({
+                     err: 1,
+                     message: 'User not found',
+                  });
+               }
+               data = await postModel.findByIdAndUpdate(
+                  pid,
                   {
-                     $pull: { likedPosts: convertToObjectIdMongo(pid) },
+                     $inc: { likes: quantity },
                   },
                   { new: true }
-               )
-               .select(['likedPosts', '_id', 'firstName', 'lastName']);
+               );
+
+               likedPost = await userModel
+                  .findByIdAndUpdate(
+                     userId,
+                     {
+                        $pull: { likedPosts: convertToObjectIdMongo(pid) },
+                     },
+                     { new: true }
+                  )
+                  .select(['likedPosts', '_id', 'firstName', 'lastName']);
+            }
+
+            resolve({
+               err: 0,
+               message: data
+                  ? 'React post successfully'
+                  : 'Failed to react post',
+               data: { post: data, likedPost },
+            });
          }
-
-         resolve({
-            err: 0,
-            message: data ? 'React post successfully' : 'Failed to react post',
-            data: { post: data, likedPost },
-         });
       } catch (error) {
          console.log(error);
          reject(error);
