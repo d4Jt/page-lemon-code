@@ -333,15 +333,9 @@ const reactPost = (pid, userId, { quantity, save }) => {
                message: 'Quantity must be 1 or -1',
             });
          } else {
-            const data = await postModel.findByIdAndUpdate(
-               pid,
-               {
-                  $inc: { likes: quantity },
-               },
-               { new: true }
-            );
-
+            let data;
             let likedPost;
+
             if (data && (+quantity === 1 || save === true)) {
                const user = await userModel.findById(userId);
                if (!user) {
@@ -359,6 +353,14 @@ const reactPost = (pid, userId, { quantity, save }) => {
                      err: 1,
                      message: "You've already liked this post",
                   });
+               data = await postModel.findByIdAndUpdate(
+                  pid,
+                  {
+                     $inc: { likes: quantity },
+                  },
+                  { new: true }
+               );
+
                likedPost = await userModel
                   .findByIdAndUpdate(
                      userId,
@@ -383,6 +385,13 @@ const reactPost = (pid, userId, { quantity, save }) => {
                      message: 'User not found',
                   });
                }
+               data = await postModel.findByIdAndUpdate(
+                  pid,
+                  {
+                     $inc: { likes: quantity },
+                  },
+                  { new: true }
+               );
 
                likedPost = await userModel
                   .findByIdAndUpdate(
