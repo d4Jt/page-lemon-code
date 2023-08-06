@@ -105,30 +105,6 @@ const updateUser = ({ ...body }, userId, fileData) =>
       }
    });
 
-   const savedPosts = ({ save, pid }, userId) =>
-   new Promise(async (resolve, reject) => {
-      try {
-         const posts = await postModel.findById(pid);
-
-         if (save) {
-            await userModel.findByIdAndUpdate(userId, {
-               $addToSet: { savedPosts: posts.id },
-            });
-         } else {
-            await userModel.findByIdAndUpdate(userId, {
-               $pull: { savedPosts: posts.id },
-            });
-         }
-
-         resolve({
-            err: 0,
-            message: posts ? 'Save posts successfully' : 'Save posts failed',
-         });
-      } catch (error) {
-         reject(error);
-      }
-   });
-
 const softDelete = (userId) => new Promise(async (resolve, reject) => {
    try {
       const user = await userModel.findByIdAndUpdate(userId,{
