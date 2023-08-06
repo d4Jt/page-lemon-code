@@ -67,7 +67,7 @@ const getOneUser = (userId) =>
       }
    });
 
-   const getCurrent = (userId) =>
+const getCurrent = (userId) =>
    new Promise(async (resolve, reject) => {
       try {
 
