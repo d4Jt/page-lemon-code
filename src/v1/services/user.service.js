@@ -4,6 +4,7 @@ const userModel = require('../models/user.model');
 const cloudinary = require('cloudinary').v2;
 const { convertToObjectIdMongo } = require('../utils');
 
+// get user model
 const getAllUsers = () =>
    new Promise(async (resolve, reject) => {
       try {
@@ -66,6 +67,7 @@ const getOneUser = (userId) =>
       }
    });
 
+// update user model
 const updateUser = ({ ...body }, userId, fileData) =>
    new Promise(async (resolve, reject) => {
       try {
@@ -103,6 +105,32 @@ const updateUser = ({ ...body }, userId, fileData) =>
       }
    });
 
+const softDelete = (userId) => new Promise(async (resolve, reject) => {
+   try {
+      const user = await userModel.findByIdAndUpdate(userId,{
+         isDeleted: true,
+      });
+      
+      if(user.posts.length > 0){
+         user.posts.map(async (post) => {
+            await postModel.findByIdAndUpdate(post.id, {isDeleted: true});
+            await commentModel.updateMany({postId: post.id}, {isDeleted: true});
+         })
+      }
+
+      resolve({
+         err: user? 0: 1,
+         messages: user? 'User deleted successfully': 'User deleted failed',
+         user,
+      })
+
+      
+   } catch (error) {
+      reject(error);
+   }
+})
+
+// delete user model
 const deleteUser = (userId) =>
    new Promise(async (resolve, reject) => {
       try {
@@ -141,6 +169,7 @@ const deleteUser = (userId) =>
          reject(error);
       }
    });
+
 
 const getCurrent = (userId) =>
    new Promise(async (resolve, reject) => {
@@ -199,4 +228,5 @@ module.exports = {
    updateUser,
    getCurrent,
    savedPosts,
+   softDelete,
 };
