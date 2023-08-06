@@ -198,31 +198,6 @@ const deleteUser = (userId) =>
    });
 
 
-const getCurrent = (userId) =>
-   new Promise(async (resolve, reject) => {
-      try {
-         const data = await userModel
-            .findById(convertToObjectIdMongo(userId))
-            .select('-refreshToken -password -role')
-            .populate([
-               {
-                  path: 'posts',
-                  select: '-isDeleted',
-               },
-               {
-                  path: 'savedPosts',
-                  select: '-isDeleted',
-               },
-            ]);
-         resolve({
-            err: data ? 0 : 1,
-            message: data ? 'Get current users' : 'Get current user failed',
-            data: data ? data : null,
-         });
-      } catch (error) {
-         reject(error);
-      }
-   });
 
 const savedPosts = ({ save, pid }, userId) =>
    new Promise(async (resolve, reject) => {

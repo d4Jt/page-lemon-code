@@ -198,7 +198,7 @@ const getAllPosts = () =>
             .populate({
                path: 'user',
                select: 'avatar firstName lastName',
-            });
+            }).sort({ createdAt: -1 });
 
          resolve({
             err: 0,
