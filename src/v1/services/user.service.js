@@ -67,33 +67,6 @@ const getOneUser = (userId) =>
       }
    });
 
-   const getCurrent = (userId) =>
-   new Promise(async (resolve, reject) => {
-      try {
-
-         const data = await userModel
-            .findById(userId)
-            .select('-refreshToken -password -role')
-            .populate([
-               {
-                  path: 'posts',
-                  select: '-isDeleted',
-               },
-               {
-                  path: 'savedPosts',
-                  select: '-isDeleted',
-               },
-            ]);
-         resolve({
-            err: data ? 0 : 1,
-            message: data ? 'Get current users' : 'Get current user failed',
-            data: data ? data : null,
-         });
-      } catch (error) {
-         reject(error);
-      }
-   });
-
 // update user model
 const updateUser = ({ ...body }, userId, fileData) =>
    new Promise(async (resolve, reject) => {
