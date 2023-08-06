@@ -7,25 +7,35 @@ const uploadCloud = require('../middlewares/uploader');
 const comment = require('../models/comment.model');
 
 // router.post('/create',verifyToken, postController.createPost);
-router.get('/', postController.getPosts);
+// get
+router.get('/getPosts', postController.getPosts);
 router.get('/getAll', postController.getAllPosts);
+router.get('/getAllTags', postController.getAllTags);
+router.get('/getPostsUser/:uid', postController.getPostsOfUser);
+router.get('/:pslug', postController.getAPost);
+
+
+// post
 router.post(
    '/',
    verifyToken,
    uploadCloud.single('image'),
    postController.createPost
 );
+router.post('/like/:pid', verifyToken, postController.reactPost);
+
+
+//put
 router.put(
    '/',
    verifyToken,
    uploadCloud.single('image'),
    postController.updatePost
 );
-router.get('/getAllTags', postController.getAllTags);
-router.get('/getPostsUser/:uid', postController.getPostsOfUser);
-router.post('/like/:pid', verifyToken, postController.reactPost);
 router.put('/softDelete', verifyToken, postController.softDeletePost);
+
+
+//delete
 router.delete('/', verifyToken, isAdmin, postController.deletePost);
-router.get('/:pslug', postController.getAPost);
 
 module.exports = router;

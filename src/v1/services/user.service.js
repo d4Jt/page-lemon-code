@@ -4,6 +4,7 @@ const userModel = require('../models/user.model');
 const cloudinary = require('cloudinary').v2;
 const {convertToObjectIdMongo} = require('../utils');
 
+// get user model
 const getAllUsers = () =>
    new Promise(async (resolve, reject) => {
       try {
@@ -66,6 +67,34 @@ const getOneUser = (userId) =>
       }
    });
 
+   const getCurrent = (userId) =>
+   new Promise(async (resolve, reject) => {
+      try {
+
+         const data = await userModel
+            .findById(userId)
+            .select('-refreshToken -password -role')
+            .populate([
+               {
+                  path: 'posts',
+                  select: '-isDeleted',
+               },
+               {
+                  path: 'savedPosts',
+                  select: '-isDeleted',
+               },
+            ]);
+         resolve({
+            err: data ? 0 : 1,
+            message: data ? 'Get current users' : 'Get current user failed',
+            data: data ? data : null,
+         });
+      } catch (error) {
+         reject(error);
+      }
+   });
+
+// update user model
 const updateUser = ({ ...body }, userId, fileData) =>
    new Promise(async (resolve, reject) => {
       try {
@@ -103,6 +132,56 @@ const updateUser = ({ ...body }, userId, fileData) =>
       }
    });
 
+   const savedPosts = ({ save, pid }, userId) =>
+   new Promise(async (resolve, reject) => {
+      try {
+         const posts = await postModel.findById(pid);
+
+         if (save) {
+            await userModel.findByIdAndUpdate(userId, {
+               $addToSet: { savedPosts: posts.id },
+            });
+         } else {
+            await userModel.findByIdAndUpdate(userId, {
+               $pull: { savedPosts: posts.id },
+            });
+         }
+
+         resolve({
+            err: 0,
+            message: posts ? 'Save posts successfully' : 'Save posts failed',
+         });
+      } catch (error) {
+         reject(error);
+      }
+   });
+
+const softDelete = (userId) => new Promise(async (resolve, reject) => {
+   try {
+      const user = await userModel.findByIdAndUpdate(userId,{
+         isDeleted: true,
+      });
+      
+      if(user.posts.length > 0){
+         user.posts.map(async (post) => {
+            await postModel.findByIdAndUpdate(post.id, {isDeleted: true});
+            await commentModel.updateMany({postId: post.id}, {isDeleted: true});
+         })
+      }
+
+      resolve({
+         err: user? 0: 1,
+         messages: user? 'User deleted successfully': 'User deleted failed',
+         user,
+      })
+
+      
+   } catch (error) {
+      reject(error);
+   }
+})
+
+// delete user model
 const deleteUser = (userId) =>
    new Promise(async (resolve, reject) => {
       try {
@@ -142,56 +221,7 @@ const deleteUser = (userId) =>
       }
    });
 
-const getCurrent = (userId) =>
-   new Promise(async (resolve, reject) => {
-      try {
 
-         const data = await userModel
-            .findById(userId)
-            .select('-refreshToken -password -role')
-            .populate([
-               {
-                  path: 'posts',
-                  select: '-isDeleted',
-               },
-               {
-                  path: 'savedPosts',
-                  select: '-isDeleted',
-               },
-            ]);
-         resolve({
-            err: data ? 0 : 1,
-            message: data ? 'Get current users' : 'Get current user failed',
-            data: data ? data : null,
-         });
-      } catch (error) {
-         reject(error);
-      }
-   });
-   
-const savedPosts = ({ save, pid }, userId) =>
-   new Promise(async (resolve, reject) => {
-      try {
-         const posts = await postModel.findById(pid);
-
-         if (save) {
-            await userModel.findByIdAndUpdate(userId, {
-               $addToSet: { savedPosts: posts.id },
-            });
-         } else {
-            await userModel.findByIdAndUpdate(userId, {
-               $pull: { savedPosts: posts.id },
-            });
-         }
-
-         resolve({
-            err: 0,
-            message: posts ? 'Save posts successfully' : 'Save posts failed',
-         });
-      } catch (error) {
-         reject(error);
-      }
-   });
 
 module.exports = {
    getAllUsers,
@@ -200,4 +230,5 @@ module.exports = {
    updateUser,
    getCurrent,
    savedPosts,
+   softDelete,
 };

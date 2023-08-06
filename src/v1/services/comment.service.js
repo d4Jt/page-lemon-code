@@ -4,6 +4,40 @@ const commentModel = require('../models/comment.model');
 const { findByIdComment } = require('../models/repositories/find.repositories');
 const cloudinary = require('cloudinary').v2;
 
+//get comments model
+const getAllComment = () =>
+   new Promise(async (resolve, reject) => {
+      try {
+         const data = await commentModel.find({ isDeleted: false });
+
+         resolve({
+            err: 0,
+            message: data ? 'Get all' : 'Hãy làm thêm post cho chúng tôi',
+            data,
+         });
+      } catch (error) {
+         console.log(error);
+         reject(error);
+      }
+   });
+
+const getComment = ({ ...query }) =>
+   new Promise(async (resolve, reject) => {
+      try {
+         // (user === 'my') ? userId : user;
+
+         const data = await commentModel.find({ isDeleted: false, ...query });
+         resolve({
+            err: 0,
+            message: data.length > 0 ? 'Get post' : 'not found',
+            data: data.length > 0 ? data : null,
+         });
+      } catch (error) {
+         console.log(error);
+         reject(error);
+      }
+   });
+// post comment model
 const createComment = ({ pid, ...body }, userId, fileData) =>
    new Promise(async (resolve, reject) => {
       try {
@@ -31,6 +65,7 @@ const createComment = ({ pid, ...body }, userId, fileData) =>
       }
    });
 
+// update comments model
 const updateComment = ({ cid, ...body }, userId, fileData) =>
    new Promise(async (resolve, reject) => {
       try {
@@ -72,7 +107,9 @@ const updateComment = ({ cid, ...body }, userId, fileData) =>
       }
    });
 
-const deleteComment = (cid) =>
+//delete comment model
+
+const deleteComment = (cid, userId) =>
    new Promise(async (resolve, reject) => {
       try {
          const comment = await commentModel.findById(cid);
@@ -86,6 +123,10 @@ const deleteComment = (cid) =>
          const data = await commentModel.findByIdAndDelete(comment.id);
 
          cloudinary.api.delete_resources(data.imageName);
+
+         await userModel.findByIdAndUpdate(userId, {
+            $pull: {likedComments: comment.id}
+         })
 
          resolve({
             err: 0,
@@ -124,6 +165,10 @@ const softDeleteComment = (cid, userId) =>
             { new: true }
          );
 
+         await userModel.findByIdAndUpdate(userId, {
+            $pull: {likedComments: comment.id}
+         })
+
          resolve({
             err: 0,
             message: data
@@ -137,38 +182,7 @@ const softDeleteComment = (cid, userId) =>
       }
    });
 
-const getAllComment = () =>
-   new Promise(async (resolve, reject) => {
-      try {
-         const data = await commentModel.find({ isDeleted: false });
 
-         resolve({
-            err: 0,
-            message: data ? 'Get all' : 'Hãy làm thêm post cho chúng tôi',
-            data,
-         });
-      } catch (error) {
-         console.log(error);
-         reject(error);
-      }
-   });
-
-const getComment = ({ ...query }) =>
-   new Promise(async (resolve, reject) => {
-      try {
-         // (user === 'my') ? userId : user;
-
-         const data = await commentModel.find({ isDeleted: false, ...query });
-         resolve({
-            err: 0,
-            message: data.length > 0 ? 'Get post' : 'not found',
-            data: data.length > 0 ? data : null,
-         });
-      } catch (error) {
-         console.log(error);
-         reject(error);
-      }
-   });
 
 module.exports = {
    createComment,
