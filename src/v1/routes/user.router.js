@@ -6,6 +6,7 @@ const uploadCloud = require('../middlewares/uploader');
 
 
 
+
 // get
 router.get('/getAll', verify, isAdmin, userController.getAllUsers);
 
@@ -13,14 +14,12 @@ router.get('/getCurrent', verify, userController.getCurrent);
 
 router.get('/:uid', userController.getOneUser);
 
-
 //post
 
 router.post('/savedPosts/:pid', verify, userController.savedPosts);
 
 
 // put
-
 router.put(
    '/',
    verify,
