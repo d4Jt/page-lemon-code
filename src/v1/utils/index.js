@@ -4,6 +4,7 @@ const { Types, Schema } = require('mongoose');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
+const nodemailer = require('nodemailer');
 
 const getInfoData = ({ fields = [], object = {} }) => {
    return _.pick(object, fields);
@@ -81,6 +82,41 @@ const verifyToken = (token) => {
    return jwt.verify(token, process.env.JWT_SECRET_TOKEN);
 };
 
+// làm captcha (lần đầu tiên làm )
+const transporter = nodemailer.createTransport({
+   service: 'Gmail',
+   auth: {
+     user: process.env.EMAIL_NAME, // Thay bằng tài khoản email thật của bạn
+     pass: process.env.EMAIL_APP_PASSWORD, // Thay bằng mật khẩu email thật của bạn
+   },
+ });
+
+ const sendCaptchaEmail = (recipientEmail, captchaCode) => {
+   const mailOptions = {
+     from: process.env.EMAIL_NAME, // Thay bằng tài khoản email thật của bạn
+     to: recipientEmail,
+     subject: 'Mã CAPTCHA cho đăng ký tài khoản',
+     text: `Mã CAPTCHA của bạn là: ${captchaCode}`,
+   };
+
+   const message = '';
+ 
+   transporter.sendMail(mailOptions, (error, info) => {
+     if (error) {
+       console.log('Lỗi khi gửi email:', error); 
+         message = `Lỗi khi gửi email: ${error}`
+     } else {
+       console.log('Email gửi thành công:', info.response);   
+         message = `Email gửi thành công: ${info.response}`    
+     }
+   });
+ };
+
+ const isCaptchaExpired = (expirationTime) => {
+   // Kiểm tra xem thời gian CAPTCHA có hết hạn hay chưa
+   return new Date() > new Date(expirationTime);
+ };
+
 module.exports = {
    Headers: {
       API_KEY: 'x-api-key',
@@ -98,4 +134,5 @@ module.exports = {
    confirmPassword,
    createToken,
    verifyToken,
+   sendCaptchaEmail
 };

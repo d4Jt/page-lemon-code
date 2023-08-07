@@ -25,6 +25,7 @@ router.get(
 
 //get
 router.get('/refresh', verify, authController.refreshToken);
+router.get('/registerEmail',authController.registerEmail );
 
 
 

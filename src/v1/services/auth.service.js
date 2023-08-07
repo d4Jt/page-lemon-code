@@ -9,6 +9,9 @@ const { hashPassword, confirmPassword, createToken } = require('../utils');
 require('dotenv').config();
 const jwt = require('jsonwebtoken');
 const cloudinary = require('cloudinary').v2;
+const {sendCaptchaEmail} = require('../utils');
+const ShortUniqueId = require('short-unique-id');
+const uid = new ShortUniqueId({ length: 6 });
 // const {findOneOrCreatePassport} = require('../models/repositories/user.repositories');
 // require('dotenv').config();
 
@@ -240,10 +243,19 @@ const refreshToken = (refresh_token) =>
       }
    });
 
+const registerEmail = (email) => new Promise(async (resolve, reject) => {
+   const sendCaptcha = sendCaptchaEmail(email, uid() );
+   resolve({
+      err: 0,
+      message: sendCaptcha,
+   })
+})
+
 module.exports = {
    authenticateWithGitHub,
    authenticateWithGoogle,
    register,
    login,
    refreshToken,
+   registerEmail,
 };
