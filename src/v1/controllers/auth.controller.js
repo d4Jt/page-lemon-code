@@ -60,6 +60,16 @@ const refreshToken = async (req, res) => {
    res.status(200).json(response);
 };
 
+const registerEmail = async (req, res) => {
+   try {
+      const { email } = req.query;
+      const user = await authenticationService.registerEmail(email);
+      return res.json(user);
+   } catch (error) {
+      return internalServerError(res);
+   }
+};
+
 module.exports = {
    handleGoogleCallback,
    handleGitHubCallback,
@@ -69,4 +79,5 @@ module.exports = {
    register,
    login,
    refreshToken,
+   registerEmail,
 };

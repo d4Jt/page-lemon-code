@@ -223,6 +223,12 @@ const savedPosts = ({ save, pid }, userId) =>
       }
    });
 
+// đăng kí email
+
+const forgotPassword = () => new Promise((resolve, reject) => {
+   
+});
+
 module.exports = {
    getAllUsers,
    getOneUser,
