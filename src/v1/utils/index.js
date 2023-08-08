@@ -99,7 +99,7 @@ const transporter = nodemailer.createTransport({
      text: `Mã CAPTCHA của bạn là: ${captchaCode}`,
    };
 
-   const message = '';
+   let message = '';
  
    transporter.sendMail(mailOptions, (error, info) => {
      if (error) {
