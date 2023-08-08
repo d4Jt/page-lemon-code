@@ -5,11 +5,18 @@ const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const GitHubStrategy = require('passport-github2').Strategy;
 const userModel = require('../models/user.model');
-const { hashPassword, confirmPassword, createToken } = require('../utils');
+const userVerifiedModel = require('../models/userVerified.model');
+const {
+   hashPassword,
+   confirmPassword,
+   createToken,
+   convertToObjectIdMongo,
+   isCaptchaExpired,
+} = require('../utils');
 require('dotenv').config();
 const jwt = require('jsonwebtoken');
 const cloudinary = require('cloudinary').v2;
-const {sendCaptchaEmail} = require('../utils');
+const { sendCaptchaEmail } = require('../utils');
 const ShortUniqueId = require('short-unique-id');
 const uid = new ShortUniqueId({ length: 6 });
 // const {findOneOrCreatePassport} = require('../models/repositories/user.repositories');
@@ -86,6 +93,21 @@ const register = ({ email, password, ...body }) =>
 
          delete objectData.password;
          delete objectData.role;
+
+         const captcha = uid();
+
+         const userVerify = await userVerifiedModel.create({
+            userId: data._id,
+            captcha,
+         });
+
+         if (userVerify) {
+            const sendCaptcha = sendCaptchaEmail(email, captcha);
+            resolve({
+               err: 0,
+               message: sendCaptcha,
+            });
+         }
 
          const accessToken = data
             ? createToken(
@@ -243,13 +265,40 @@ const refreshToken = (refresh_token) =>
       }
    });
 
-const registerEmail = (email) => new Promise(async (resolve, reject) => {
-   const sendCaptcha = sendCaptchaEmail(email, uid() );
-   resolve({
-      err: 0,
-      message: sendCaptcha,
-   })
-})
+const registerEmail = (email) =>
+   new Promise(async (resolve, reject) => {
+      const captcha = uid();
+
+      const sendCaptcha = sendCaptchaEmail(email, captcha);
+      resolve({
+         err: 0,
+         message: sendCaptcha,
+      });
+   });
+
+const handleVerifyCaptcha = (captcha) =>
+   new Promise(async (resolve) => {
+      const captchaData = await userVerifiedModel.findOne({ captcha });
+
+      if (captchaData) {
+         const isHetHan = isCaptchaExpired(captchaData.expireAt);
+
+         if (isHetHan) {
+            resolve({
+               err: 1,
+               message: 'Captcha is expired',
+            });
+         }
+
+         const user = await userModel.updateOne(
+            { _id: captchaData.userId },
+            {
+               isActivated: true,
+            }
+         );
+         if (user) resolve({ err: 0, message: 'Verify captcha success' });
+      }
+   });
 
 module.exports = {
    authenticateWithGitHub,
@@ -258,4 +307,5 @@ module.exports = {
    login,
    refreshToken,
    registerEmail,
+   handleVerifyCaptcha,
 };

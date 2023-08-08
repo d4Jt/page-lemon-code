@@ -11,8 +11,9 @@ const cloudinary = require('cloudinary').v2;
 const createPost = (payload, userId, fileData) =>
    new Promise(async (resolve, reject) => {
       try {
-         console.log(userId);
-         const { title } = payload;
+         const { title, tags } = payload;
+
+         tags.map((tag) => tag.toLowerCase().trim().split(' ').join(''));
 
          const data = new postModel({
             user: userId,
@@ -198,7 +199,8 @@ const getAllPosts = () =>
             .populate({
                path: 'user',
                select: 'avatar firstName lastName',
-            }).sort({ createdAt: -1 });
+            })
+            .sort({ createdAt: -1 });
 
          resolve({
             err: 0,
@@ -302,7 +304,7 @@ const getPostsOfUser = (userId, currentUser = '') =>
                   path: 'user',
                   select: 'avatar firstName lastName',
                })
-               .lean(); // FIXME: drop data and add isPublished: true
+               .lean();
 
          resolve({
             err: 0,
