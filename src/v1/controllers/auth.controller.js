@@ -70,6 +70,17 @@ const registerEmail = async (req, res) => {
    }
 };
 
+const handleVerifyCaptcha = async (req, res) => {
+   try {
+      const isActive = await authenticationService.handleVerifyCaptcha(
+         req.params.captcha
+      );
+      return res.json(isActive);
+   } catch (e) {
+      return internalServerError(res);
+   }
+};
+
 module.exports = {
    handleGoogleCallback,
    handleGitHubCallback,
@@ -80,4 +91,5 @@ module.exports = {
    login,
    refreshToken,
    registerEmail,
+   handleVerifyCaptcha,
 };

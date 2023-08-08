@@ -8,7 +8,6 @@ const uploadCloud = require('../middlewares/uploader');
 router.get('/google', authController.authenticateWithGoogle);
 router.get('/github', authController.authenticateWithGitHub);
 
-
 // Route to handle Google callback
 router.get(
    '/google/callback',
@@ -25,9 +24,8 @@ router.get(
 
 //get
 router.get('/refresh', verify, authController.refreshToken);
-router.get('/registerEmail',authController.registerEmail );
-
-
+router.get('/registerEmail', authController.registerEmail);
+router.get('/handleCaptcha/:captcha', authController.handleVerifyCaptcha);
 
 //post
 router.post('/register', authController.register);
