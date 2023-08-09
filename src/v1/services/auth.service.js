@@ -300,6 +300,30 @@ const handleVerifyCaptcha = (captcha) =>
       }
    });
 
+   const handleForgotPasswordCaptcha = (captcha, password) =>
+      new Promise(async (resolve) => {
+      const captchaData = await userVerifiedModel.findOne({ captcha });
+
+      if (captchaData) {
+         const isHetHan = isCaptchaExpired(captchaData.expireAt);
+
+         if (isHetHan) {
+            resolve({
+               err: 1,
+               message: 'Captcha is expired',
+            });
+         }
+
+         const user = await userModel.updateOne(
+            { _id: captchaData.userId },
+            {
+               password: hashPassword(password),
+            }
+         );
+         if (user) resolve({ err: 0, message: 'Verify captcha success' });
+      }
+   });
+
 module.exports = {
    authenticateWithGitHub,
    authenticateWithGoogle,
