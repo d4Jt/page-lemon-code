@@ -234,7 +234,7 @@ const sendCaptchaEmail = (recipientEmail, captchaCode) => {
    };
 
    let message = '';
-
+ 
    transporter.sendMail(mailOptions, (error, info) => {
       if (error) {
          console.log('Lỗi khi gửi email:', error);
@@ -244,7 +244,82 @@ const sendCaptchaEmail = (recipientEmail, captchaCode) => {
          message = `Email gửi thành công: ${info.response}`;
       }
    });
+   return message;
 };
+
+const sendForgotPasswordEmail = (recipientEmail, captchaCode) => {
+   const emailOptions = {
+      from: '"Lemon Code 🍋" <process.env.EMAIL_NAME>', // Thay bằng tài khoản email thật của bạn
+      to: recipientEmail,
+      subject: 'Mã CAPTCHA cho đăng ký tài khoản',
+      html: `
+      <html>
+         <head>
+            <style>
+               body {
+               font-family: Arial, sans-serif;
+               background-color: #f5f5f5;
+               margin: 0;
+               padding: 20px;
+               }
+               .container {
+               background-color: white;
+               padding: 20px;
+               border-radius: 5px;
+               box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.2);
+               }
+               h1 {
+               margin: 0;
+               color: #007bff;
+               }
+               p {
+               margin-top: 10px;
+               margin-bottom: 10px;
+               }
+               strong {
+               color: #ff6600;
+               }
+               a {
+               display: inline-block;
+               background-color: #007bff;
+               color: white;
+               padding: 10px 20px;
+               text-decoration: none;
+               border-radius: 3px;
+               }
+               a:hover {
+               background-color: #0056b3;
+               }
+            </style>
+         </head>
+         <body>
+            <div class="container">
+               <h1>Mã CAPTCHA cho bạn</h1>
+               <p>Dưới đây là mã CAPTCHA của bạn:</p>
+               <p><strong>${captchaCode}</strong></p>
+               <p>Hãy sử dụng mã này để xác nhận đăng ký.</p>
+               <a href="https://yourwebsite.com">Đi đến trang web</a>
+            </div>
+         </body>
+   </html>`
+   }
+
+   let message = '';
+
+   transporter.sendMail(emailOptions, (error, info) => {
+      if (error) {
+         console.log('Lỗi khi gửi email:', error);
+         message = `Lỗi khi gửi email: ${error}`;
+      } else {
+         console.log('Email gửi thành công:', info.response);
+         message = `Email gửi thành công: ${info.response}`;
+      }
+   });
+
+   return message;
+}
+
+
 
 const isCaptchaExpired = (expirationTime) => {
    // Kiểm tra xem thời gian CAPTCHA có hết hạn hay chưa
@@ -272,4 +347,5 @@ module.exports = {
    verifyToken,
    sendCaptchaEmail,
    isCaptchaExpired,
+   sendForgotPasswordEmail,
 };

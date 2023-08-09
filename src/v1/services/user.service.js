@@ -2,7 +2,9 @@ const commentModel = require('../models/comment.model');
 const postModel = require('../models/post.model');
 const userModel = require('../models/user.model');
 const cloudinary = require('cloudinary').v2;
-const { convertToObjectIdMongo } = require('../utils');
+const { convertToObjectIdMongo, sendForgotPasswordEmail } = require('../utils');
+const ShortUniqueId = require('short-unique-id');
+const uid = new ShortUniqueId({ length: 6 });
 
 // get user model
 const getAllUsers = () =>
@@ -225,8 +227,27 @@ const savedPosts = ({ save, pid }, userId) =>
 
 // đăng kí email
 
-const forgotPassword = () => new Promise((resolve, reject) => {
-   
+const forgotPassword = (email, password) => new Promise(async (resolve, reject) => {
+   const captcha = uid();
+         const user = await userModel.findOne({email});
+         if(!user){
+            resolve({
+               err: 0,
+               message: 'User not found',
+            });
+         }
+         const userVerify = await userVerifiedModel.create({
+            userId: user._id,
+            captcha,
+         });
+
+         if (userVerify) {
+            const sendCaptcha = sendForgotPasswordEmail(email, captcha);
+            resolve({
+               err: 0,
+               message: sendCaptcha,
+            });
+         }
 });
 
 module.exports = {
@@ -237,4 +258,5 @@ module.exports = {
    getCurrent,
    savedPosts,
    softDelete,
+   forgotPassword
 };
