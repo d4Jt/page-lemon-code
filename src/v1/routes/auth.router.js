@@ -26,9 +26,12 @@ router.get(
 router.get('/refresh', verify, authController.refreshToken);
 router.get('/registerEmail', authController.registerEmail);
 router.get('/handleCaptcha/:captcha', authController.handleVerifyCaptcha);
+router.get('/forgotPassword', authController.forgotPassword);
 
 //post
 router.post('/register', authController.register);
+router.post('/forgotPasswordCaptcha/:captcha', authController.handleForgotPasswordCaptcha);
+
 
 router.post('/login', authController.login);
 

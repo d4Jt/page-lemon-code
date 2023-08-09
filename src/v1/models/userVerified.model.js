@@ -18,7 +18,7 @@ const userVerifiedSchema = new Schema(
       },
       expireAt: {
          type: Date,
-         default: Date.now() + 1 * 60 * 1000,
+         default: Date.now() + 15 * 60 * 1000,
       },
    },
    {
@@ -27,6 +27,6 @@ const userVerifiedSchema = new Schema(
    }
 );
 
-userVerifiedSchema.index({ createdAt: 1 }, { expireAfterSeconds: 1 * 60 });
+userVerifiedSchema.index({ createdAt: 1 }, { expireAfterSeconds: 15 * 60 });
 
 module.exports = model('UserVerified', userVerifiedSchema);

@@ -81,6 +81,28 @@ const handleVerifyCaptcha = async (req, res) => {
    }
 };
 
+const forgotPassword = async (req, res) => {
+   try {
+      const { email } = req.query;
+      const user = await authenticationService.forgotPassword(email);
+      return res.json(user); 
+   } catch (error) {
+      return internalServerError(res);
+   }
+};
+
+const handleForgotPasswordCaptcha = async (req, res) => {
+   try {
+      const user = await authenticationService.handleForgotPasswordCaptcha(
+         req.params.captcha,
+         req.body.password
+      );
+      return res.json(user);
+   } catch (e) {
+      return internalServerError(res);
+   }
+};
+
 module.exports = {
    handleGoogleCallback,
    handleGitHubCallback,
@@ -92,4 +114,6 @@ module.exports = {
    refreshToken,
    registerEmail,
    handleVerifyCaptcha,
+   forgotPassword,
+   handleForgotPasswordCaptcha,
 };
