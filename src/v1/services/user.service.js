@@ -227,29 +227,6 @@ const savedPosts = ({ save, pid }, userId) =>
 
 // đăng kí email
 
-const forgotPassword = (email, password) => new Promise(async (resolve, reject) => {
-   const captcha = uid();
-         const user = await userModel.findOne({email});
-         if(!user){
-            resolve({
-               err: 0,
-               message: 'User not found',
-            });
-         }
-         const userVerify = await userVerifiedModel.create({
-            userId: user._id,
-            captcha,
-         });
-
-         if (userVerify) {
-            const sendCaptcha = sendForgotPasswordEmail(email, captcha);
-            resolve({
-               err: 0,
-               message: sendCaptcha,
-            });
-         }
-});
-
 module.exports = {
    getAllUsers,
    getOneUser,
@@ -258,5 +235,4 @@ module.exports = {
    getCurrent,
    savedPosts,
    softDelete,
-   forgotPassword
 };

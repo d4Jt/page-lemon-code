@@ -12,6 +12,7 @@ const {
    createToken,
    convertToObjectIdMongo,
    isCaptchaExpired,
+   sendForgotPasswordEmail
 } = require('../utils');
 require('dotenv').config();
 const jwt = require('jsonwebtoken');
@@ -102,11 +103,7 @@ const register = ({ email, password, ...body }) =>
          });
 
          if (userVerify) {
-            const sendCaptcha = sendCaptchaEmail(email, captcha);
-            resolve({
-               err: 0,
-               message: sendCaptcha,
-            });
+             sendCaptchaEmail(email, captcha);
          }
 
          const accessToken = data
@@ -290,14 +287,45 @@ const handleVerifyCaptcha = (captcha) =>
             });
          }
 
-         const user = await userModel.updateOne(
-            { _id: captchaData.userId },
+         const user = await userModel.findByIdAndUpdate(
+             captchaData.userId,
             {
                isActivated: true,
             }
          );
          if (user) resolve({ err: 0, message: 'Verify captcha success' });
       }
+   });
+
+   const forgotPassword = (email) => new Promise(async (resolve, reject) => {
+      const captcha = uid();
+         const user = await userModel.findOne({email});
+         if(!user){
+            resolve({
+               err: 1,
+               message: 'User not found',
+               });
+            }else{
+            const userVerify = await userVerifiedModel.create({
+               userId: user?.id,
+               captcha,
+               });
+      
+            if (userVerify) {
+               sendForgotPasswordEmail(email, captcha);
+               resolve({
+                  err: 0,
+                  message: "Send captcha email successfully",
+                  });
+               }
+               else{
+                  resolve({
+                     err: 1,
+                     message: 'create captcha email failed',
+                  })
+               }
+            }
+            
    });
 
    const handleForgotPasswordCaptcha = (captcha, password) =>
@@ -320,7 +348,10 @@ const handleVerifyCaptcha = (captcha) =>
                password: hashPassword(password),
             }
          );
-         if (user) resolve({ err: 0, message: 'Verify captcha success' });
+         if (user) resolve({ err: 0, message: 'reset password success' })
+         else{
+            resolve({ err: 1, message: 'reset password failed' })
+         }
       }
    });
 
@@ -332,4 +363,6 @@ module.exports = {
    refreshToken,
    registerEmail,
    handleVerifyCaptcha,
+   forgotPassword,
+   handleForgotPasswordCaptcha,
 };

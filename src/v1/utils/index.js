@@ -304,19 +304,15 @@ const sendForgotPasswordEmail = (recipientEmail, captchaCode) => {
    </html>`
    }
 
-   let message = '';
 
    transporter.sendMail(emailOptions, (error, info) => {
       if (error) {
          console.log('Lỗi khi gửi email:', error);
-         message = `Lỗi khi gửi email: ${error}`;
       } else {
          console.log('Email gửi thành công:', info.response);
-         message = `Email gửi thành công: ${info.response}`;
       }
    });
 
-   return message;
 }
 
 
