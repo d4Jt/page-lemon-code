@@ -24,7 +24,7 @@ router.get(
 
 //get
 router.get('/refresh', verify, authController.refreshToken);
-router.get('/registerEmail', authController.registerEmail);
+router.get('/resetCaptcha', authController.resetCaptcha);
 router.get('/handleCaptcha/:captcha', authController.handleVerifyCaptcha);
 router.get('/forgotPassword', authController.forgotPassword);
 

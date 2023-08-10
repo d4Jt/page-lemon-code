@@ -10,7 +10,9 @@ const userVerifiedSchema = new Schema(
       },
       captcha: {
          type: String,
-         required: true,
+      },
+      resetCaptcha: {
+         type: String,
       },
       createdAt: {
          type: Date,
