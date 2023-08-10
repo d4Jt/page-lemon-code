@@ -37,7 +37,7 @@ const createUserPassport = async (req, res) => {
 const register = async (req, res) => {
    try {
       const user = await authenticationService.register(req.body);
-      res.cookie('reset_token', user.reset_token   )       
+      res.cookie('reset_token', user.reset_token, { maxAge: 15 * 60 * 1000 }  )       
       res.json(user);
    } catch (error) {
       return internalServerError(res);
@@ -64,7 +64,7 @@ const refreshToken = async (req, res) => {
 const resetCaptcha = async (req, res) => {
    try {
       const user = await authenticationService.resetCaptcha(req.cookies.reset_token); 
-      res.cookie('reset_token', user.reset_token) 
+      res.cookie('reset_token', user.reset_token, { maxAge: 15 * 60 * 1000 }) 
       res.status(200).json(user);
    } catch (error) {
       return internalServerError(res);
@@ -86,7 +86,7 @@ const forgotPassword = async (req, res) => {
    try {
       const { email } = req.query;
       const user = await authenticationService.forgotPassword(email);
-      res.cookie('reset_token', user.reset_token )
+      res.cookie('reset_token', user.reset_token, { maxAge: 15 * 60 * 1000 } )
       res.status(200).json(user); 
    } catch (error) {
       return internalServerError(res);
@@ -98,7 +98,7 @@ const handleForgotPasswordCaptcha = async (req, res) => {
       const user = await authenticationService.handleForgotPasswordCaptcha(
          req.params.captcha
       );
-      res.cookie('reset_password_token', user.reset_password_token)
+      res.cookie('reset_password_token', user.reset_password_token, { maxAge: 15 * 60 * 1000 })
       res.status(200).json(user);
    } catch (e) {
       return internalServerError(res);
