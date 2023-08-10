@@ -124,13 +124,13 @@ const register = ({ email, password, ...body }) =>
              sendCaptchaEmail(email, captcha);
              resolve({
                err: 0,
-               message: "Hãy kiểm tra email để xác nhận đăng kí",
+               message: "Please check your email to confirm your registration",
                reset_token: resetToken,
              })
          }else{
             resolve({
                err: 1,
-               message: "Xẩy ra lỗi khi tạo mã captcha",
+               message: "error while generating captcha",
              })
          }
 
@@ -158,7 +158,7 @@ const login = ({ email, password }) =>
          if(data.isActivated === false){
             resolve({
                err: 1,
-               message: 'Vui lòng xác nhận email để sử dụng tài khoản',
+               message: 'Please confirm your email to use the account',
             });
          }
 
@@ -360,7 +360,7 @@ const handleVerifyCaptcha = (captcha) =>
 
          resolve({
             err: data ?  0 : 1,
-            message: data? 'Xác nhận đăng kí thành công': 'Xin hãy nhập lại mã captcha',
+            message: data? 'Confirmation of successful registration': 'Please enter captcha code',
            
          });
 
