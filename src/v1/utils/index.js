@@ -191,7 +191,8 @@ const sendCaptchaEmail = (recipientEmail, captchaCode) => {
                         </p>
                         <div className='button' style='margin-top: 40px'>
                            <a
-                              href='http://localhost:5000/api/auth/handleCaptcha/${captchaCode}'
+                              href='
+                              https://lemon-ts.vercel.app/verify-account'
                               className='btn'
                               style='
                                           padding: 10px 20px;

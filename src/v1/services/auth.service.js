@@ -12,7 +12,8 @@ const {
    createToken,
    convertToObjectIdMongo,
    isCaptchaExpired,
-   sendForgotPasswordEmail
+   sendForgotPasswordEmail,
+   verifyToken
 } = require('../utils');
 require('dotenv').config();
 const jwt = require('jsonwebtoken');
@@ -20,6 +21,7 @@ const cloudinary = require('cloudinary').v2;
 const { sendCaptchaEmail } = require('../utils');
 const ShortUniqueId = require('short-unique-id');
 const uid = new ShortUniqueId({ length: 6 });
+var crypto = require('crypto');
 // const {findOneOrCreatePassport} = require('../models/repositories/user.repositories');
 // require('dotenv').config();
 
@@ -77,12 +79,12 @@ const register = ({ email, password, ...body }) =>
    new Promise(async (resolve, reject) => {
       try {
          const findOneUser = await userModel.findOne({ email });
-         if (findOneUser) {
+         if (findOneUser)
             resolve({
-               err: 0,
+               err: 1,
                message: 'User already registered',
             });
-         }
+         
 
          const data = await userModel.create({
             email,
@@ -90,60 +92,48 @@ const register = ({ email, password, ...body }) =>
             ...body,
          });
 
-         const objectData = data.toObject();
+         // const objectData = data.toObject();
 
-         delete objectData.password;
-         delete objectData.role;
+         // delete objectData.password;
+         // delete objectData.role;
 
          const captcha = uid();
+         const randomBytes = crypto.randomBytes(5); // 1 byte = 2 ký tự hex
+         const resetCaptcha = randomBytes.toString('hex')
 
+         console.log(resetCaptcha);
+
+         const resetToken = createToken({ reset: resetCaptcha }, '15m');
+
+         
          const userVerify = await userVerifiedModel.create({
             userId: data._id,
             captcha,
+            resetCaptcha, // Sử dụng chuỗi ngẫu nhiên đã tạo
          });
+
+         // const check = verifyToken(resetToken)
+
+         // resolve({
+         //    resetCaptcha: userVerify.resetCaptcha,
+         //    check,
+         //    reset_token: resetToken,
+         // })
 
          if (userVerify) {
              sendCaptchaEmail(email, captcha);
+             resolve({
+               err: 0,
+               message: "Hãy kiểm tra email để xác nhận đăng kí",
+               reset_token: resetToken,
+             })
+         }else{
+            resolve({
+               err: 1,
+               message: "Xẩy ra lỗi khi tạo mã captcha",
+             })
          }
 
-         const accessToken = data
-            ? createToken(
-                 {
-                    id: data._id,
-                    email: data.email,
-                    firstName: data.firstName,
-                    lastName: data.lastName,
-                    msisdn: data.msisdn,
-                 },
-                 '1d'
-              )
-            : null;
-         const refreshToken = data
-            ? createToken(
-                 {
-                    id: data._id,
-                    email: data.email,
-                    firstName: data.firstName,
-                    lastName: data.lastName,
-                    msisdn: data.msisdn,
-                 },
-                 '3d'
-              )
-            : null;
-
-         // delete jsonData.password;
-
-         resolve({
-            err: accessToken ? 0 : 1,
-            message: accessToken ? 'Registered successful' : 'Registered fail',
-            data: data ? objectData : null,
-            access_token: accessToken ? `${accessToken}` : null,
-            refresh_token: refreshToken ? refreshToken : null,
-         });
-
-         if (refreshToken) {
-            await userModel.updateOne({ email }, { refreshToken });
-         }
       } catch (error) {
          console.log(error);
          reject(error);
@@ -162,6 +152,13 @@ const login = ({ email, password }) =>
             resolve({
                err: 1,
                message: 'Email is not registered',
+            });
+         }
+
+         if(data.isActivated === false){
+            resolve({
+               err: 1,
+               message: 'Vui lòng xác nhận email để sử dụng tài khoản',
             });
          }
 
@@ -261,16 +258,55 @@ const refreshToken = (refresh_token) =>
          reject(error);
       }
    });
-
-const registerEmail = (email) =>
+   
+const resetCaptcha = (resetToken) =>
    new Promise(async (resolve, reject) => {
-      const captcha = uid();
+      try {
+         const resetCaptcha = verifyToken(resetToken)
 
-      const sendCaptcha = sendCaptchaEmail(email, captcha);
-      resolve({
-         err: 0,
-         message: sendCaptcha,
-      });
+         console.log(resetCaptcha);
+         // resolve({
+         //    resetCaptcha,
+         // })
+         const captchaId = await userVerifiedModel.findOne({resetCaptcha: resetCaptcha.reset})
+         console.log(captchaId);
+         const newCaptcha = uid();
+         const randomBytes = crypto.randomBytes(5); // 1 byte = 2 ký tự hex
+         const newResetCaptcha = randomBytes.toString('hex')
+
+         const newResetToken = createToken({reset: newResetCaptcha}, '15m')
+
+
+         const userVerify = await userVerifiedModel.findByIdAndUpdate(captchaId.id, {
+            captcha: newCaptcha,
+            resetCaptcha: newResetCaptcha
+         }, {
+            new: true,
+         })
+
+         if(userVerify){
+            const user = await userModel.findById(userVerify.userId);
+            if(!user){
+               resolve({
+                  err: 1,
+                  message: 'user not found',
+               })
+            }else{
+               sendCaptchaEmail(user.email, newCaptcha);
+            }
+            
+         }
+         resolve({
+            err: userVerify? 0: 1,
+            message: userVerify? 'reset captcha successfully': 'reset captcha failed',
+            reset_token: userVerify ? newResetToken: null,
+         });
+      } catch (error) {
+         console.log(error);
+         reject(error);
+      }
+
+
    });
 
 const handleVerifyCaptcha = (captcha) =>
@@ -287,13 +323,50 @@ const handleVerifyCaptcha = (captcha) =>
             });
          }
 
-         const user = await userModel.findByIdAndUpdate(
+         const data = await userModel.findByIdAndUpdate(
              captchaData.userId,
             {
                isActivated: true,
-            }
+            }, {new: true}
          );
-         if (user) resolve({ err: 0, message: 'Verify captcha success' });
+         // const accessToken = data
+         //    ? createToken(
+         //         {
+         //            id: data.id,
+         //            email: data.email,
+         //            firstName: data.firstName,
+         //            lastName: data.lastName,
+         //            msisdn: data.msisdn,
+         //         },
+         //         '1d'
+         //      )
+         //    : null;
+         // const refreshToken = data
+         //    ? createToken(
+         //         {
+         //            id: data.id,
+         //            email: data.email,
+         //            firstName: data.firstName,
+         //            lastName: data.lastName,
+         //            msisdn: data.msisdn,
+         //         },
+         //         '3d'
+         //      )
+         //    : null;
+         // const jsonData = data.toJSON();
+         // delete jsonData.password;
+         // delete jsonData.refreshToken;
+         // delete jsonData.role;
+
+         resolve({
+            err: data ?  0 : 1,
+            message: data? 'Xác nhận đăng kí thành công': 'Xin hãy nhập lại mã captcha',
+           
+         });
+
+         // if (refreshToken) {
+         //    await userModel.findByIdAndUpdate(data.id, { refreshToken });
+         // }
       }
    });
 
@@ -361,7 +434,7 @@ module.exports = {
    register,
    login,
    refreshToken,
-   registerEmail,
+   resetCaptcha,
    handleVerifyCaptcha,
    forgotPassword,
    handleForgotPasswordCaptcha,
