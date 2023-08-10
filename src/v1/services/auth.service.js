@@ -394,7 +394,7 @@ const handleVerifyCaptcha = (captcha) =>
                const reset_token = createToken({reset: resetCaptcha}, '15m')
       
                if (userVerify) {
-                  sendForgotPasswordEmail(email, captcha);
+                  sendCaptchaEmail(email, captcha);
                   resolve({
                      err: 0,
                      message: "Send captcha email successfully",

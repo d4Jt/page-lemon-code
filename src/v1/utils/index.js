@@ -147,7 +147,7 @@ const sendCaptchaEmail = (recipientEmail, captchaCode) => {
                                     color: #1b1b1b;
                                     margin-bottom: 20px;
                               '>
-                        Hoàn tất quá trình đăng ký
+                        Hoàn tất quá trình xác nhận bằng mã captcha
                      </h2>
                      <div
                         className='line'
@@ -187,7 +187,7 @@ const sendCaptchaEmail = (recipientEmail, captchaCode) => {
                                        '>
                               ${captchaCode}
                            </span>
-                           . Vui lòng nhập mã này để hoàn tất quá trình đăng ký.
+                           . Vui lòng không chia sẻ mã captcha của bạn.
                         </p>
                         <div className='button' style='margin-top: 40px'>
                            <a
