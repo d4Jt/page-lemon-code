@@ -27,10 +27,11 @@ router.get('/refresh', verify, authController.refreshToken);
 router.get('/resetCaptcha', authController.resetCaptcha);
 router.get('/handleCaptcha/:captcha', authController.handleVerifyCaptcha);
 router.get('/forgotPassword', authController.forgotPassword);
+router.get('/forgotPasswordCaptcha/:captcha', authController.handleForgotPasswordCaptcha);
 
 //post
 router.post('/register', authController.register);
-router.post('/forgotPasswordCaptcha/:captcha', authController.handleForgotPasswordCaptcha);
+router.post('/updatePassword', authController.updatePassword);
 
 
 router.post('/login', authController.login);

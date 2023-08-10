@@ -42,6 +42,10 @@ const userSchema = new Schema(
          enum: ['user', 'admin'],
          default: 'user',
       },
+      resetPassword: {
+         type: String,
+         default: '',
+      },
       posts: [
          {
             type: Schema.Types.ObjectId,

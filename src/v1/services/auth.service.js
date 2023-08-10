@@ -379,29 +379,39 @@ const handleVerifyCaptcha = (captcha) =>
                message: 'User not found',
                });
             }else{
-            const userVerify = await userVerifiedModel.create({
-               userId: user?.id,
-               captcha,
-               });
-      
-            if (userVerify) {
-               sendForgotPasswordEmail(email, captcha);
-               resolve({
-                  err: 0,
-                  message: "Send captcha email successfully",
+               const randomBytes = crypto.randomBytes(5); // 1 byte = 2 ký tự hex
+               const resetPassword = randomBytes.toString('hex');
+               const resetCaptcha = crypto.randomBytes(5).toString('hex');
+               const updateUser = await userModel.findByIdAndUpdate(user.id, {
+                  resetPassword,
+               }, {new: true});
+               const userVerify = await userVerifiedModel.create({
+                  userId: user?.id,
+                  captcha,
+                  resetCaptcha,
+                  resetPassword: updateUser.resetPassword,
                   });
-               }
-               else{
+               const reset_token = createToken({reset: resetCaptcha}, '15m')
+      
+               if (userVerify) {
+                  sendForgotPasswordEmail(email, captcha);
                   resolve({
-                     err: 1,
-                     message: 'create captcha email failed',
-                  })
-               }
+                     err: 0,
+                     message: "Send captcha email successfully",
+                     reset_token,
+                     });
+                  }
+                  else{
+                     resolve({
+                        err: 1,
+                        message: 'create captcha email failed',
+                     })
+                  }
             }
             
    });
 
-   const handleForgotPasswordCaptcha = (captcha, password) =>
+   const handleForgotPasswordCaptcha = (captcha) =>
       new Promise(async (resolve) => {
       const captchaData = await userVerifiedModel.findOne({ captcha });
 
@@ -415,18 +425,34 @@ const handleVerifyCaptcha = (captcha) =>
             });
          }
 
-         const user = await userModel.updateOne(
-            { _id: captchaData.userId },
-            {
-               password: hashPassword(password),
-            }
-         );
-         if (user) resolve({ err: 0, message: 'reset password success' })
-         else{
-            resolve({ err: 1, message: 'reset password failed' })
-         }
+         const reset_password_token = createToken({resetPassword: captchaData.resetPassword}, '15m');
+
+         resolve({
+            err: 1,
+            message: 'Captcha code confirmation successful',
+            reset_password_token,
+         });
+
+         
       }
    });
+
+const updatePassword = (token, password) => new Promise( async(resolve, reject) => {
+
+   const resetToken = verifyToken(token);
+   console.log(resetToken);
+   const user = await userModel.updateOne(
+      { resetPassword: resetToken.resetPassword},
+      {
+         password: hashPassword(password),
+         resetPassword: "",
+      }
+   );
+   if (user) resolve({ err: 0, message: 'reset password success' })
+   else{
+      resolve({ err: 1, message: 'reset password failed' })
+   }
+})
 
 module.exports = {
    authenticateWithGitHub,
@@ -438,4 +464,5 @@ module.exports = {
    handleVerifyCaptcha,
    forgotPassword,
    handleForgotPasswordCaptcha,
+   updatePassword
 };

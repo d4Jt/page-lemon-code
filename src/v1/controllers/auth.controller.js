@@ -86,7 +86,8 @@ const forgotPassword = async (req, res) => {
    try {
       const { email } = req.query;
       const user = await authenticationService.forgotPassword(email);
-      return res.json(user); 
+      res.cookie('reset_token', user.reset_token )
+      res.status(200).json(user); 
    } catch (error) {
       return internalServerError(res);
    }
@@ -95,10 +96,22 @@ const forgotPassword = async (req, res) => {
 const handleForgotPasswordCaptcha = async (req, res) => {
    try {
       const user = await authenticationService.handleForgotPasswordCaptcha(
-         req.params.captcha,
+         req.params.captcha
+      );
+      res.cookie('reset_password_token', user.reset_password_token)
+      res.status(200).json(user);
+   } catch (e) {
+      return internalServerError(res);
+   }
+};
+
+const updatePassword = async (req, res) => {
+   try {
+      const user = await authenticationService.updatePassword(
+         req.cookies.reset_password_token,
          req.body.password
       );
-      return res.json(user);
+      res.status(200).json(user);
    } catch (e) {
       return internalServerError(res);
    }
@@ -117,4 +130,5 @@ module.exports = {
    handleVerifyCaptcha,
    forgotPassword,
    handleForgotPasswordCaptcha,
+   updatePassword,
 };

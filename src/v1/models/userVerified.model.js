@@ -14,6 +14,9 @@ const userVerifiedSchema = new Schema(
       resetCaptcha: {
          type: String,
       },
+      resetPassword: {
+         type: String,
+      },
       createdAt: {
          type: Date,
          default: Date.now(),
