@@ -84,7 +84,7 @@ const handleVerifyCaptcha = async (req, res) => {
 
 const forgotPassword = async (req, res) => {
    try {
-      const { email } = req.query;
+      const { email } = req.body;
       const user = await authenticationService.forgotPassword(email);
       res.cookie('reset_token', user.reset_token, { maxAge: 15 * 60 * 1000 } )
       res.status(200).json(user); 
