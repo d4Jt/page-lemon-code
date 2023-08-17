@@ -69,23 +69,15 @@ const getOneUser = (userId) =>
       }
    });
 
-   const getCurrent = (userId) =>
+const getCurrent = (userId) =>
    new Promise(async (resolve, reject) => {
       try {
-
          const data = await userModel
             .findById(userId)
-            .select('-refreshToken -password -role')
-            .populate([
-               {
-                  path: 'posts',
-                  select: '-isDeleted',
-               },
-               {
-                  path: 'savedPosts',
-                  select: '-isDeleted',
-               },
-            ]);
+            .select(
+               '-refreshToken -password -role -likedPosts -savedPosts -isDeleted -posts'
+            );
+
          resolve({
             err: data ? 0 : 1,
             message: data ? 'Get current users' : 'Get current user failed',
@@ -134,30 +126,34 @@ const updateUser = ({ ...body }, userId, fileData) =>
       }
    });
 
-const softDelete = (userId) => new Promise(async (resolve, reject) => {
-   try {
-      const user = await userModel.findByIdAndUpdate(userId,{
-         isDeleted: true,
-      });
-      
-      if(user.posts.length > 0){
-         user.posts.map(async (post) => {
-            await postModel.findByIdAndUpdate(post.id, {isDeleted: true});
-            await commentModel.updateMany({postId: post.id}, {isDeleted: true});
-         })
+const softDelete = (userId) =>
+   new Promise(async (resolve, reject) => {
+      try {
+         const user = await userModel.findByIdAndUpdate(userId, {
+            isDeleted: true,
+         });
+
+         if (user.posts.length > 0) {
+            user.posts.map(async (post) => {
+               await postModel.findByIdAndUpdate(post.id, { isDeleted: true });
+               await commentModel.updateMany(
+                  { postId: post.id },
+                  { isDeleted: true }
+               );
+            });
+         }
+
+         resolve({
+            err: user ? 0 : 1,
+            messages: user
+               ? 'User deleted successfully'
+               : 'User deleted failed',
+            user,
+         });
+      } catch (error) {
+         reject(error);
       }
-
-      resolve({
-         err: user? 0: 1,
-         messages: user? 'User deleted successfully': 'User deleted failed',
-         user,
-      })
-
-      
-   } catch (error) {
-      reject(error);
-   }
-})
+   });
 
 // delete user model
 const deleteUser = (userId) =>
@@ -198,8 +194,6 @@ const deleteUser = (userId) =>
          reject(error);
       }
    });
-
-
 
 const savedPosts = ({ save, pid }, userId) =>
    new Promise(async (resolve, reject) => {
