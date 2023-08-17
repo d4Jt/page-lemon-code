@@ -322,14 +322,15 @@ const getPostsOfUser = (userId, currentUser = '') =>
 const reactPost = (pid, userId, { quantity, save }) => {
    return new Promise(async (resolve, reject) => {
       try {
-         const post = await postModel.findById(pid);
-         if (!post) {
+         console.log(pid);
+         const postBylug = await postModel.findOne({ slug: pid });
+         if (!postBylug) {
             resolve({
                err: 1,
                message: 'Post not found',
             });
          }
-         if (quantity !== 1 && quantity !== -1) {
+         if (+quantity !== 1 && +quantity !== -1) {
             resolve({
                err: 1,
                message: 'Quantity must be 1 or -1',
@@ -337,8 +338,7 @@ const reactPost = (pid, userId, { quantity, save }) => {
          } else {
             let data;
             let likedPost;
-
-            if (data && (+quantity === 1 || save === true)) {
+            if (postBylug && (+quantity === 1 || save === true)) {
                const user = await userModel.findById(userId);
                if (!user) {
                   resolve({
@@ -355,19 +355,22 @@ const reactPost = (pid, userId, { quantity, save }) => {
                      err: 1,
                      message: "You've already liked this post",
                   });
-               data = await postModel.findByIdAndUpdate(
-                  pid,
+               data = await postModel.findOneAndUpdate(
+                  { slug: pid },
                   {
                      $inc: { likes: quantity },
                   },
                   { new: true }
                );
 
+               console.log(data);
                likedPost = await userModel
                   .findByIdAndUpdate(
                      userId,
                      {
-                        $addToSet: { likedPosts: convertToObjectIdMongo(pid) },
+                        $addToSet: {
+                           likedPosts: convertToObjectIdMongo(postBylug._id),
+                        },
                      },
                      { new: true }
                   )
@@ -379,7 +382,7 @@ const reactPost = (pid, userId, { quantity, save }) => {
                      'savedPosts',
                      'likedComments',
                   ]);
-            } else if (data && (+quantity === -1 || save === false)) {
+            } else if (postBylug && (+quantity === -1 || save === false)) {
                const user = await userModel.findById(userId);
                if (!user) {
                   resolve({
@@ -387,8 +390,8 @@ const reactPost = (pid, userId, { quantity, save }) => {
                      message: 'User not found',
                   });
                }
-               data = await postModel.findByIdAndUpdate(
-                  pid,
+               data = await postModel.findOneAndUpdate(
+                  { slug: pid },
                   {
                      $inc: { likes: quantity },
                   },
@@ -399,11 +402,20 @@ const reactPost = (pid, userId, { quantity, save }) => {
                   .findByIdAndUpdate(
                      userId,
                      {
-                        $pull: { likedPosts: convertToObjectIdMongo(pid) },
+                        $pull: {
+                           likedPosts: convertToObjectIdMongo(postBylug._id),
+                        },
                      },
                      { new: true }
                   )
-                  .select(['likedPosts', '_id', 'firstName', 'lastName']);
+                  .select([
+                     'likedPosts',
+                     '_id',
+                     'firstName',
+                     'lastName',
+                     'savedPosts',
+                     'likedComments',
+                  ]);
             }
 
             resolve({
