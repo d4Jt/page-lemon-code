@@ -322,9 +322,8 @@ const getPostsOfUser = (userId, currentUser = '') =>
 const reactPost = (pid, userId, { quantity, save }) => {
    return new Promise(async (resolve, reject) => {
       try {
-         console.log(pid);
-         const postBylug = await postModel.findOne({ slug: pid });
-         if (!postBylug) {
+         const postById = await postModel.findById(pid);
+         if (!postById) {
             resolve({
                err: 1,
                message: 'Post not found',
@@ -338,7 +337,7 @@ const reactPost = (pid, userId, { quantity, save }) => {
          } else {
             let data;
             let likedPost;
-            if (postBylug && (+quantity === 1 || save === true)) {
+            if (postById && (+quantity === 1 || save === true)) {
                const user = await userModel.findById(userId);
                if (!user) {
                   resolve({
@@ -355,21 +354,20 @@ const reactPost = (pid, userId, { quantity, save }) => {
                      err: 1,
                      message: "You've already liked this post",
                   });
-               data = await postModel.findOneAndUpdate(
-                  { slug: pid },
+               data = await postModel.findByIdAndUpdate(
+                  pid,
                   {
                      $inc: { likes: quantity },
                   },
                   { new: true }
                );
 
-               console.log(data);
                likedPost = await userModel
                   .findByIdAndUpdate(
                      userId,
                      {
                         $addToSet: {
-                           likedPosts: convertToObjectIdMongo(postBylug._id),
+                           likedPosts: convertToObjectIdMongo(pid),
                         },
                      },
                      { new: true }
@@ -382,7 +380,7 @@ const reactPost = (pid, userId, { quantity, save }) => {
                      'savedPosts',
                      'likedComments',
                   ]);
-            } else if (postBylug && (+quantity === -1 || save === false)) {
+            } else if (postById && (+quantity === -1 || save === false)) {
                const user = await userModel.findById(userId);
                if (!user) {
                   resolve({
@@ -390,8 +388,8 @@ const reactPost = (pid, userId, { quantity, save }) => {
                      message: 'User not found',
                   });
                }
-               data = await postModel.findOneAndUpdate(
-                  { slug: pid },
+               data = await postModel.findByIdAndUpdate(
+                  pid,
                   {
                      $inc: { likes: quantity },
                   },
@@ -403,7 +401,7 @@ const reactPost = (pid, userId, { quantity, save }) => {
                      userId,
                      {
                         $pull: {
-                           likedPosts: convertToObjectIdMongo(postBylug._id),
+                           likedPosts: convertToObjectIdMongo(pid),
                         },
                      },
                      { new: true }
@@ -419,7 +417,7 @@ const reactPost = (pid, userId, { quantity, save }) => {
             }
 
             resolve({
-               err: 0,
+               err: data ? 0 : 1,
                message: data
                   ? 'React post successfully'
                   : 'Failed to react post',
