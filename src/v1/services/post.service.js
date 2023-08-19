@@ -425,6 +425,15 @@ const reactPost = (pid, userId, { quantity, save }) => {
                      message: 'User not found',
                   });
                }
+               const isInUse = user.likedPosts.some(
+                  (id) => id.toString() === pid.toString()
+               );
+
+               if (!isInUse)
+                  resolve({
+                     err: 1,
+                     message: "You've already unliked this post",
+                  });
                data = await postModel.findByIdAndUpdate(
                   pid,
                   {
