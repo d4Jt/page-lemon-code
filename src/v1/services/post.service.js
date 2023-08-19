@@ -15,7 +15,7 @@ const queue = new Bull('postViewsQueue', {
    redis: {
       port: process.env.REDIS_PORT,
       host: process.env.REDIS_HOST,
-      password: 'admin'
+      password: process.env.REDIS_PASSWORD
    },
 });
 
@@ -246,6 +246,17 @@ const getPosts = ({ tags, ...query }) =>
       }
    });
 
+   queue.process(async (job, done) => {
+      // console.log(job.data);
+      const pId = job.data.postId;
+      const views = await redis.get(`post:${pId}:views`);
+      
+      // Cập nhật số lượt xem vào cơ sở dữ liệu chính
+      await postModel.findByIdAndUpdate(pId, { views: views }, { new: true });
+      // console.log(`Updated views for post ${post.title}: ${views}`);
+      done();
+   });
+
 const getAPost = (slug, userId) =>
    new Promise(async (resolve, reject) => {
       try {
@@ -267,17 +278,14 @@ const getAPost = (slug, userId) =>
             await queue.add({ postId: postId });
          }
 
-         queue.process(async (job, done) => {
-            // console.log(job.data);
-            const pId = job.data.postId;
-            const views = await redis.get(`post:${pId}:views`);
-            
-            // Cập nhật số lượt xem vào cơ sở dữ liệu chính
-            await postModel.findByIdAndUpdate(pId, { views: views }, { new: true });
-            // console.log(`Updated views for post ${post.title}: ${views}`);
-            done();
-         });
+         // Đợi cho công việc trong hàng đợi hoàn thành trước khi trả về dữ liệu
+         // await new Promise((resolve) => {
+         //    queue.once('completed', (job, result) => {
+         //       resolve();
+         //    });
+         // });
 
+      // Sau khi công việc trong hàng đợi đã hoàn thành, trả về dữ liệu
          resolve({
             err: 0,
             message: data ? 'Get a post' : 'not found',
