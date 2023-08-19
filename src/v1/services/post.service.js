@@ -7,6 +7,17 @@ const uid = new ShortUniqueId({ length: 4 });
 const { findByIdPost } = require('../models/repositories/find.repositories');
 const { convertToObjectIdMongo } = require('../utils');
 const cloudinary = require('cloudinary').v2;
+const Redis = require("ioredis");
+// const winston = require('winston');
+const redis = new Redis(process.env.REDIS_URL);
+const Bull = require('bull');
+const queue = new Bull('postViewsQueue', {
+   redis: {
+      port: process.env.REDIS_PORT,
+      host: process.env.REDIS_HOST,
+      password: 'admin'
+   },
+});
 
 const createPost = (payload, userId, fileData) =>
    new Promise(async (resolve, reject) => {
@@ -133,6 +144,7 @@ const deletePost = (pid, userId) =>
                ? 'Delete post successfully'
                : 'Failed to delete post',
          });
+
       } catch (error) {
          console.log(error);
          reject(error);
@@ -234,7 +246,7 @@ const getPosts = ({ tags, ...query }) =>
       }
    });
 
-const getAPost = (slug) =>
+const getAPost = (slug, userId) =>
    new Promise(async (resolve, reject) => {
       try {
          // (user === 'my') ? userId : user;
@@ -242,11 +254,36 @@ const getAPost = (slug) =>
             slug,
             isDeleted: false,
          });
+
+         const postId = data.id;
+         const isMember = await redis.sismember(`post:${postId}:viewers`, userId);
+
+         if (!isMember) {
+            const newCount = await redis.incr(`post:${postId}:views`);
+            await redis.sadd(`post:${postId}:viewers`, userId);
+            console.log(`User ${userId} viewed post ${postId}. Views: ${newCount}`);
+
+            // Đẩy công việc vào hàng đợi để cập nhật cơ sở dữ liệu chính
+            await queue.add({ postId: postId });
+         }
+
+         queue.process(async (job, done) => {
+            // console.log(job.data);
+            const pId = job.data.postId;
+            const views = await redis.get(`post:${pId}:views`);
+            
+            // Cập nhật số lượt xem vào cơ sở dữ liệu chính
+            await postModel.findByIdAndUpdate(pId, { views: views }, { new: true });
+            // console.log(`Updated views for post ${post.title}: ${views}`);
+            done();
+         });
+
          resolve({
             err: 0,
             message: data ? 'Get a post' : 'not found',
             data: data ? data : null,
          });
+
       } catch (error) {
          console.log(error);
          reject(error);
