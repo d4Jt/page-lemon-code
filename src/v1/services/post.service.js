@@ -19,19 +19,21 @@ const queue = new Bull('postViewsQueue', {
    },
 });
 
-const createPost = (payload, userId, fileData) =>
+const createPost = ({...payload}, userId, fileData) =>
    new Promise(async (resolve, reject) => {
       try {
          const { title, tags } = payload;
 
-         tags.map((tag) => tag.toLowerCase().trim().split(' ').join(''));
+         // tags.map((tag) => tag.toLowerCase().trim().split(' ').join(''));
+         const newTags = tags.map(tag => tag.toUpperCase())
 
          const data = new postModel({
             user: userId,
             slug: slugify(`${title} ${uid()}`),
             image: fileData?.path,
             imageName: fileData?.filename,
-            ...payload,
+            ...payload, 
+            tags: newTags,
          });
          await data.save();
 
@@ -47,6 +49,7 @@ const createPost = (payload, userId, fileData) =>
                ? 'Created post successfully'
                : 'Failed to create post',
             data: data ? data : null,
+            tags: newTags,
          });
       } catch (error) {
          console.log(error);
@@ -58,6 +61,8 @@ const createPost = (payload, userId, fileData) =>
 const updatePost = ({ pid, ...body }, userId, fileData) =>
    new Promise(async (resolve, reject) => {
       try {
+         const {title} = body;
+         
          const post = await findByIdPost(pid);
          if (!post) {
             resolve({
@@ -66,6 +71,8 @@ const updatePost = ({ pid, ...body }, userId, fileData) =>
             });
             if (fileData) cloudinary.uploader.destroy(fileData.filename);
          }
+
+         const newTitle = title ? slugify(`${title} ${uid()}`): post.title;
 
          if (!post.user.equals(userId)) {
             resolve({
@@ -82,6 +89,7 @@ const updatePost = ({ pid, ...body }, userId, fileData) =>
             {
                image: fileData?.path,
                imageName: fileData?.filename,
+               slug: newTitle,
                ...body,
             },
             { new: true }
@@ -115,7 +123,7 @@ const deletePost = (pid, userId) =>
          const data = await postModel.findByIdAndDelete(post.id);
 
          if (data) {
-            await userModel.findByIdAndUpdate(userId, {
+            await userModel.findByIdAndUpdate(data.user, {
                $pull: {
                   posts: post.id,
                   likedPosts: post.id,
@@ -266,6 +274,13 @@ const getAPost = (slug, userId) =>
             isDeleted: false,
          });
 
+         if(!data || data.isDeleted){
+            resolve({
+               err: 1,
+               message: 'post not found',
+            });
+         }
+
          const postId = data.id;
          const isMember = await redis.sismember(`post:${postId}:viewers`, userId);
 
@@ -277,13 +292,6 @@ const getAPost = (slug, userId) =>
             // Đẩy công việc vào hàng đợi để cập nhật cơ sở dữ liệu chính
             await queue.add({ postId: postId });
          }
-
-         // Đợi cho công việc trong hàng đợi hoàn thành trước khi trả về dữ liệu
-         // await new Promise((resolve) => {
-         //    queue.once('completed', (job, result) => {
-         //       resolve();
-         //    });
-         // });
 
       // Sau khi công việc trong hàng đợi đã hoàn thành, trả về dữ liệu
          resolve({
