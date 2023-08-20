@@ -37,7 +37,7 @@ const deletePost = async (req, res) => {
 };
 
 const getAPost = async (req, res) => {
-   const post = await postService.getAPost(req.params.pslug, req.user.id);
+   const post = await postService.getAPost(req.params.pslug);
 
    console.log(post);
    res.status(200).json(post);
