@@ -265,14 +265,14 @@ const getPosts = ({ tags, ...query }) =>
       done();
    });
 
-const getAPost = (slug, userId) =>
+const getAPost = (slug) =>
    new Promise(async (resolve, reject) => {
       try {
          // (user === 'my') ? userId : user;
-         const data = await postModel.findOne({
+         const data = await postModel.updateOne({
             slug,
             isDeleted: false,
-         });
+         }, { $inc: { views: 1 } }, {new: true} );
 
          if(!data || data.isDeleted){
             resolve({
@@ -281,23 +281,15 @@ const getAPost = (slug, userId) =>
             });
          }
 
-         const postId = data.id;
-         const isMember = await redis.sismember(`post:${postId}:viewers`, userId);
+         const post = await postModel.findOne({slug});
 
-         if (!isMember) {
-            const newCount = await redis.incr(`post:${postId}:views`);
-            await redis.sadd(`post:${postId}:viewers`, userId);
-            console.log(`User ${userId} viewed post ${postId}. Views: ${newCount}`);
-
-            // Đẩy công việc vào hàng đợi để cập nhật cơ sở dữ liệu chính
-            await queue.add({ postId: postId });
-         }
+         
 
       // Sau khi công việc trong hàng đợi đã hoàn thành, trả về dữ liệu
          resolve({
             err: 0,
             message: data ? 'Get a post' : 'not found',
-            data: data ? data : null,
+            data: data ? post : null,
          });
 
       } catch (error) {

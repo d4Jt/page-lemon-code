@@ -13,7 +13,7 @@ router.get('/getAll', postController.getAllPosts);
 router.get('/getAllTags', postController.getAllTags);
 router.get('/getPostsUser/:uid', postController.getPostsOfUser);
 router.get('/:pslug', postController.getAPost);
-router.get('/getAPost/:pslug', verifyToken, postController.getAPost);
+router.get('/getAPost/:pslug', postController.getAPost);
 
 
 // post
