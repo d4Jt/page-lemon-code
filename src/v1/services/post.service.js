@@ -7,17 +7,7 @@ const uid = new ShortUniqueId({ length: 4 });
 const { findByIdPost } = require('../models/repositories/find.repositories');
 const { convertToObjectIdMongo } = require('../utils');
 const cloudinary = require('cloudinary').v2;
-const Redis = require("ioredis");
-// const winston = require('winston');
-const redis = new Redis(process.env.REDIS_URL);
-const Bull = require('bull');
-const queue = new Bull('postViewsQueue', {
-   redis: {
-      port: process.env.REDIS_PORT,
-      host: process.env.REDIS_HOST,
-      password: process.env.REDIS_PASSWORD
-   },
-});
+
 
 const createPost = ({...payload}, userId, fileData) =>
    new Promise(async (resolve, reject) => {
@@ -254,16 +244,6 @@ const getPosts = ({ tags, ...query }) =>
       }
    });
 
-   queue.process(async (job, done) => {
-      // console.log(job.data);
-      const pId = job.data.postId;
-      const views = await redis.get(`post:${pId}:views`);
-      
-      // Cập nhật số lượt xem vào cơ sở dữ liệu chính
-      await postModel.findByIdAndUpdate(pId, { views: views }, { new: true });
-      // console.log(`Updated views for post ${post.title}: ${views}`);
-      done();
-   });
 
 const getAPost = (slug) =>
    new Promise(async (resolve, reject) => {
