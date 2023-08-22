@@ -8,21 +8,20 @@ const { findByIdPost } = require('../models/repositories/find.repositories');
 const { convertToObjectIdMongo } = require('../utils');
 const cloudinary = require('cloudinary').v2;
 
-
-const createPost = ({...payload}, userId, fileData) =>
+const createPost = ({ ...payload }, userId, fileData) =>
    new Promise(async (resolve, reject) => {
       try {
          const { title, tags } = payload;
 
          // tags.map((tag) => tag.toLowerCase().trim().split(' ').join(''));
-         const newTags = tags.map(tag => tag.toLowerCase())
+         const newTags = tags.map((tag) => tag.toLowerCase());
 
          const data = new postModel({
             user: userId,
             slug: slugify(`${title} ${uid()}`),
             image: fileData?.path,
             imageName: fileData?.filename,
-            ...payload, 
+            ...payload,
             tags: newTags,
          });
          await data.save();
@@ -51,8 +50,8 @@ const createPost = ({...payload}, userId, fileData) =>
 const updatePost = ({ pid, ...body }, userId, fileData) =>
    new Promise(async (resolve, reject) => {
       try {
-         const {title} = body;
-         
+         const { title } = body;
+
          const post = await findByIdPost(pid);
          if (!post) {
             resolve({
@@ -62,7 +61,7 @@ const updatePost = ({ pid, ...body }, userId, fileData) =>
             if (fileData) cloudinary.uploader.destroy(fileData.filename);
          }
 
-         const newTitle = title ? slugify(`${title} ${uid()}`): post.title;
+         const newTitle = title ? slugify(`${title} ${uid()}`) : post.title;
 
          if (!post.user.equals(userId)) {
             resolve({
@@ -142,7 +141,6 @@ const deletePost = (pid, userId) =>
                ? 'Delete post successfully'
                : 'Failed to delete post',
          });
-
       } catch (error) {
          console.log(error);
          reject(error);
@@ -244,34 +242,59 @@ const getPosts = ({ tags, ...query }) =>
       }
    });
 
-
-const getAPost = (slug) =>
+const getAPost = (query) =>
    new Promise(async (resolve, reject) => {
       try {
-         // (user === 'my') ? userId : user;
-         const data = await postModel.updateOne({
-            slug,
-            isDeleted: false,
-         }, { $inc: { views: 1 } }, {new: true} );
+         const { slug, id } = query;
 
-         if(!data || data.isDeleted){
-            resolve({
-               err: 1,
-               message: 'post not found',
-            });
+         let post;
+
+         if (slug && slug !== '') {
+            const data = await postModel.updateOne(
+               {
+                  slug,
+                  isDeleted: false,
+               },
+               { $inc: { views: 1 } },
+               { new: true }
+            );
+
+            if (!data || data.isDeleted) {
+               resolve({
+                  err: 1,
+                  message: 'post not found',
+               });
+            }
+
+            post = await postModel.findOne({ slug, isDeleted: false });
          }
 
-         const post = await postModel.findOne({slug});
+         if (id && id !== '') {
+            const data = await postModel.updateOne(
+               {
+                  _id: id,
+                  isDeleted: false,
+               },
+               { $inc: { views: 1 } },
+               { new: true }
+            );
 
-         
+            if (!data || data.isDeleted) {
+               resolve({
+                  err: 1,
+                  message: 'post not found',
+               });
+            }
 
-      // Sau khi công việc trong hàng đợi đã hoàn thành, trả về dữ liệu
+            post = await postModel.findOne({ _id: id, isDeleted: false });
+         }
+
+         // Sau khi công việc trong hàng đợi đã hoàn thành, trả về dữ liệu
          resolve({
             err: 0,
-            message: data ? 'Get a post' : 'not found',
-            data: data ? post : null,
+            message: post ? 'Get a post' : 'not found',
+            data: post ? post : null,
          });
-
       } catch (error) {
          console.log(error);
          reject(error);

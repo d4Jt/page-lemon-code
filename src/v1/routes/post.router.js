@@ -12,9 +12,7 @@ router.get('/getPosts', postController.getPosts);
 router.get('/getAll', postController.getAllPosts);
 router.get('/getAllTags', postController.getAllTags);
 router.get('/getPostsUser/:uid', postController.getPostsOfUser);
-router.get('/:pslug', postController.getAPost);
-router.get('/getAPost/:pslug', postController.getAPost);
-
+router.get('/', postController.getAPost);
 
 // post
 router.post(
@@ -25,7 +23,6 @@ router.post(
 );
 router.post('/like/:pid', verifyToken, postController.reactPost);
 
-
 //put
 router.put(
    '/',
@@ -34,7 +31,6 @@ router.put(
    postController.updatePost
 );
 router.put('/softDelete', verifyToken, postController.softDeletePost);
-
 
 //delete
 router.delete('/', verifyToken, isAdmin, postController.deletePost);
