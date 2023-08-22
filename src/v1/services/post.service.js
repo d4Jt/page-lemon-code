@@ -14,7 +14,9 @@ const createPost = ({ ...payload }, userId, fileData) =>
          const { title, tags } = payload;
 
          // tags.map((tag) => tag.toLowerCase().trim().split(' ').join(''));
-         const newTags = tags.map((tag) => tag.toLowerCase());
+         const newTags = tags.map((tag) =>
+            tag.toLowerCase().trim().split(' ').join('')
+         );
 
          const data = new postModel({
             user: userId,

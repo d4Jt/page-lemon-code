@@ -37,9 +37,11 @@ const deletePost = async (req, res) => {
 };
 
 const getAPost = async (req, res) => {
-   const post = await postService.getAPost(req.query);
+   const slug = req.query.slug ? req.query.slug : '';
+   const id = req.query.id ? req.query.id : '';
 
-   console.log(post);
+   const post = await postService.getAPost({ slug, id });
+
    res.status(200).json(post);
 };
 
