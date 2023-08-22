@@ -268,7 +268,12 @@ const getAPost = (query) =>
                });
             }
 
-            post = await postModel.findOne({ slug, isDeleted: false });
+            post = await postModel
+               .findOne({ slug, isDeleted: false })
+               .populate({
+                  path: 'user',
+                  select: 'avatar firstName lastName _id',
+               });
          }
 
          if (id && id !== '') {
@@ -288,7 +293,12 @@ const getAPost = (query) =>
                });
             }
 
-            post = await postModel.findOne({ _id: id, isDeleted: false });
+            post = await postModel
+               .findOne({ _id: id, isDeleted: false })
+               .populate({
+                  path: 'user',
+                  select: 'avatar firstName lastName _id',
+               });
          }
 
          // Sau khi công việc trong hàng đợi đã hoàn thành, trả về dữ liệu
